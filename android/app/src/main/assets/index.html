@@ -86,7 +86,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbwtwstyUkvPzIy0NWiSzYqYZ1Nqcfi7m8IwDKQOpFCnYPLRMcrcplDf_nwX2G1-Axdi/exec",   // ends with /exec
   // Column header names in your sheet (case-insensitive):
-  COL: { date:"Date", distributor:"Distributor", officer:"Sales Officer", category:"Category", value:"Sales Value", zone:"Zone", area:"Area", empId:"Employee ID" },
+  COL: { date:"Date", distributor:"Distributor", officer:"Sales Officer", category:"Category", value:"Sales Value", zone:"Zone", area:"Area", empId:"Employee ID", distCode:"Distributor Code" },
   CURRENCY: "৳"
 };
 /* ====================================== */
@@ -107,7 +107,14 @@ function parseCSV(t){
   if(c||r.length){r.push(c);out.push(r)}
   return out;
 }
-const num = s => parseFloat(String(s||"").replace(/[^0-9.\-]/g,""))||0;
+const num = s => {                       // "Tk 1,200.50" -> 1200.5 ; "(500)" or "-500" -> -500
+  s=String(s==null?"":s).trim(); if(!s) return 0;
+  const neg=/^\(.*\)$/.test(s)||/^[^\d(.\-]*-/.test(s);
+  const v=parseFloat(s.replace(/[^0-9.]/g,""));
+  return isNaN(v)?0:(neg?-v:v);
+};
+const norm = s => String(s==null?"":s).trim().toUpperCase();   // codes: "d01 " and "D01" are the same
+const r2 = v => Math.round(v*100)/100;                           // avoid floating-point drift
 const fmt = n => CONFIG.CURRENCY + Math.round(n).toLocaleString("en-IN");
 const esc = s => String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
 
@@ -130,19 +137,22 @@ async function load(){
     showMain();
     $("upb").hidden = j.role!=="admin";
     const head=data[0].map(h=>h.trim().toLowerCase());
-    const idx={}; for(const k in CONFIG.COL){ idx[k]=head.indexOf(CONFIG.COL[k].toLowerCase()); if(idx[k]<0 && k!=="zone" && k!=="area" && k!=="empId") throw new Error(`Column "${CONFIG.COL[k]}" not found. Found: ${data[0].join(", ")}`) }
+    const idx={}; for(const k in CONFIG.COL){ idx[k]=head.indexOf(CONFIG.COL[k].toLowerCase()); if(idx[k]<0 && k!=="zone" && k!=="area" && k!=="empId" && k!=="distCode") throw new Error(`Column "${CONFIG.COL[k]}" not found. Found: ${data[0].join(", ")}`) }
     rows=data.slice(1).filter(r=>r.length>1).map(r=>{
       const cat=(r[idx.category]||"").toLowerCase();
       const d=parseDate(r[idx.date]);
       has.zone=idx.zone>=0; has.area=idx.area>=0;
       return {
-        dist:(r[idx.distributor]||"").trim(), zone:idx.zone>=0?(r[idx.zone]||"").trim():"", area:idx.area>=0?(r[idx.area]||"").trim():"", so:(r[idx.officer]||"").trim(), soId:idx.empId>=0?(r[idx.empId]||"").trim():"",
+        dist:(r[idx.distributor]||"").trim(), zone:idx.zone>=0?(r[idx.zone]||"").trim():"", area:idx.area>=0?(r[idx.area]||"").trim():"", so:(r[idx.officer]||"").trim(), soId:idx.empId>=0?norm(r[idx.empId]):"", dCode:idx.distCode>=0?norm(r[idx.distCode]):"",
         cat: cat.includes("thinner")?"Thinner":cat.includes("adhesive")?"Adhesive":null,
         val:num(r[idx.value]), month:d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:"" };
     }).filter(r=>r.cat&&r.val);
     // Employee ID = unique key for each Sales Officer; shown as "Name (ID)"
     const nm={}; rows.forEach(r=>{ if(r.soId&&r.so&&!nm[r.soId]) nm[r.soId]=r.so });
     rows.forEach(r=>{ if(r.soId) r.so=(nm[r.soId]||r.soId)+" ("+r.soId+")" });
+    // Distributor Code = unique key for each distributor; shown as "Name (CODE)"
+    const dn={}; rows.forEach(r=>{ if(r.dCode&&r.dist&&!dn[r.dCode]) dn[r.dCode]=r.dist });
+    rows.forEach(r=>{ if(r.dCode) r.dist=(dn[r.dCode]||r.dCode)+" ("+r.dCode+")" });
     buildMonths(); render();
     $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
   }catch(e){ $("app").innerHTML=`<div class="msg err">${esc(e.message)}</div>`; $("upd").textContent="Error" }
@@ -160,7 +170,7 @@ function buildMonths(){
 function top5(cat,key,m){
   const map={};
   for(const r of rows){ if(r.cat!==cat||(m&&r.month!==m)||!r[key]) continue; map[r[key]]=(map[r[key]]||0)+r.val }
-  return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  return Object.entries(map).map(([k,v])=>[k,r2(v)]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,5);
 }
 function card(title,cls,list){
   const max=list[0]?list[0][1]:1;
@@ -175,7 +185,7 @@ function byGroup(cat,key,gk,m){
     if(!g[k]) g[k]={};
     g[k][r[key]]=(g[k][r[key]]||0)+r.val;
   }
-  return Object.keys(g).sort().map(k=>[k,Object.entries(g[k]).sort((a,b)=>b[1]-a[1]).slice(0,2)]);
+  return Object.keys(g).sort().map(k=>[k,Object.entries(g[k]).map(([n,v])=>[n,r2(v)]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,2)]);
 }
 function gcard(title,cls,groups,ok,colName){
   let body;
@@ -245,20 +255,36 @@ $("upfile").onchange=async e=>{
     if(data.length<2) throw new Error("The file has no data rows.");
     const header=data[0].map(h=>String(h).trim());
     const low=header.map(h=>h.toLowerCase());
-    const need=["date","distributor","officer","empId","category","value"].map(k=>CONFIG.COL[k]);
+    const need=["date","distributor","distCode","officer","empId","category","value"].map(k=>CONFIG.COL[k]);
     const miss=need.filter(n=>!low.includes(n.toLowerCase()));
     if(miss.length) throw new Error("Missing column(s): "+miss.join(", ")+". Found: "+header.join(", "));
     const vi=low.indexOf(CONFIG.COL.value.toLowerCase()), ci=low.indexOf(CONFIG.COL.category.toLowerCase());
-    let bad=0, noId=0; const ei=low.indexOf(CONFIG.COL.empId.toLowerCase());
+    const ei=low.indexOf(CONFIG.COL.empId.toLowerCase()), di=low.indexOf(CONFIG.COL.distCode.toLowerCase());
+    const dti=low.indexOf(CONFIG.COL.date.toLowerCase()), ni=low.indexOf(CONFIG.COL.officer.toLowerCase()), dni=low.indexOf(CONFIG.COL.distributor.toLowerCase());
+    let bad=0, noEmp=0, noDist=0, zero=0, badDate=0, total=0;
+    const dnames={}, enames={};
     const rows2=data.slice(1).map(r=>{
       r=header.map((_,i)=>String(r[i]==null?"":r[i]).trim());
-      r[vi]=num(r[vi]);
+      r[vi]=num(r[vi]); total+=r[vi];
+      r[ei]=norm(r[ei]); r[di]=norm(r[di]);
       const c=r[ci].toLowerCase(); if(!c.includes("thinner")&&!c.includes("adhesive")) bad++;
-      if(!r[ei]) noId++;
+      if(!r[ei]) noEmp++; else (enames[r[ei]]=enames[r[ei]]||new Set()).add(r[ni].toLowerCase());
+      if(!r[di]) noDist++; else (dnames[r[di]]=dnames[r[di]]||new Set()).add(r[dni].toLowerCase());
+      if(!r[vi]) zero++;
+      if(!parseDate(r[dti])) badDate++;
       return r;
     });
+    const multi=o=>Object.values(o).filter(x=>x.size>1).length;
+    const w=[];
+    if(bad) w.push(bad+" rows have a Category that is not Thinner/Adhesive (not ranked)");
+    if(noDist) w.push(noDist+" rows have no Distributor Code");
+    if(noEmp) w.push(noEmp+" rows have no Employee ID");
+    if(zero) w.push(zero+" rows have a zero or unreadable Sales Value");
+    if(badDate) w.push(badDate+" rows have a Date the app cannot read (use dd/mm/yyyy)");
+    if(multi(dnames)) w.push(multi(dnames)+" Distributor Codes have more than one name (first name is shown)");
+    if(multi(enames)) w.push(multi(enames)+" Employee IDs have more than one name (first name is shown)");
     up={header,rows:rows2};
-    $("upmsg").innerHTML="✔ "+rows2.length+" rows ready to upload"+(bad?"<br>⚠ "+bad+" rows have a Category that is not Thinner/Adhesive (they will not be ranked)":"")+(noId?"<br>⚠ "+noId+" rows have no Employee ID":"");
+    $("upmsg").innerHTML="✔ "+rows2.length+" rows ready. Total Sales Value: "+fmt(total)+"<br>Check this total against your file."+w.map(x=>"<br>⚠ "+esc(x)).join("");
     $("upgo").disabled=false;
   }catch(err){ up={header:null,rows:[]}; $("upmsg").innerHTML='<span class="err">'+esc(err.message)+'</span>' }
 };
