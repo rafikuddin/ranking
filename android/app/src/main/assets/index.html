@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b2a73">
+<meta name="theme-color" content="#15151e">
 <title>Khela Hobe - Samuda Spec Chem Ltd.</title>
 <style>
-:root{--bg:#0a1f5c;--card:#10285f;--tx:#fff;--mu:#a9bde8;--bar:#2a4690;--t:#2f6bff;--a:#fb923c}
+:root{--bg:#15151e;--card:#1e1e2a;--tx:#fff;--mu:#9a9aae;--bar:#33334a;--t:#e10600;--a:#ff8000}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:linear-gradient(180deg,#2a6fe0 0%,#0f3a9c 30%,#0a2260 65%,#071a4d 100%) fixed;min-height:100vh;color:var(--tx);font:15px/1.4 system-ui,sans-serif;padding:env(safe-area-inset-top) 12px 24px}
+body{background:#15151e;min-height:100vh;color:var(--tx);font:15px/1.4 system-ui,sans-serif;padding:env(safe-area-inset-top) 12px 24px}
 header{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 8px}
 h1{font-size:19px;margin:0}
 .sub{color:var(--mu);font-size:12px}
@@ -47,46 +47,48 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .opt{display:block;margin:6px 0;font-size:14px}
 #upgo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
 #upgo:disabled{opacity:.45}
-.co{text-align:center;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#cfe0ff}
-.lb-title+.co{margin:-6px 0 12px}
+.f1{font-family:"Arial Narrow","Roboto Condensed",system-ui,sans-serif;font-style:italic}
+.co{text-align:center;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#b9b9cc}
 #login .co{margin-bottom:6px}
-.brand{font-weight:800;letter-spacing:.1em;font-size:14px}
-.lb-title{text-align:center;font-size:26px;font-weight:800;letter-spacing:.06em;margin:6px 0 10px;text-shadow:0 2px 6px rgba(0,0,40,.4)}
-.tabs{display:flex;justify-content:center;gap:8px;margin-bottom:16px}
-.tabs button{background:transparent;border:0;color:#fff;font-weight:800;letter-spacing:.08em;padding:7px 18px;border-radius:999px}
-.tabs button.on{background:#1a54d6;box-shadow:0 0 0 2px #7fb0ff inset}
-.lb{background:linear-gradient(180deg,#123a9c 0%,#0a2260 55%,#0a1c52 100%);border-radius:22px;padding:14px 12px 16px;box-shadow:0 6px 20px rgba(0,10,50,.45)}
-.lt{display:table;margin:0 auto 12px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.1);font-weight:800;font-size:12px;letter-spacing:.08em;text-align:center}
-.th .lt{color:#7dd3fc}.ad .lt{color:#fdba74}
-.pod{display:flex;align-items:flex-end;justify-content:center;gap:6px}
-.pc{flex:1;max-width:118px;display:flex;flex-direction:column;align-items:center;text-align:center}
-.pc.first{max-width:140px;margin-bottom:22px}
-.rn{font-weight:800;font-size:15px}
-.pc.first .rn{font-size:20px}
-.ring{width:74px;height:74px;padding:3px;border-radius:50%;background:linear-gradient(180deg,#7ab8ff,#1e40af)}
-.pc.first .ring{width:100px;height:100px}
-.ring .av{width:100%;height:100%;display:block}
-.crown{width:42px;height:27px;margin:2px 0 -11px;position:relative;z-index:2}
-.pn{margin-top:6px;font-size:11px;font-weight:700;line-height:1.25;letter-spacing:.02em;text-transform:uppercase;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
-.pill{display:flex;align-items:center;gap:10px;margin-top:9px;padding:6px 14px 6px 12px;border-radius:999px;background:linear-gradient(90deg,#1f4fc0,#0f2d7a)}
-.pr{width:18px;flex:none;font-weight:800;text-align:center}
-.pill .av{width:34px;height:34px;flex:none}
-.pnm{min-width:0;font-weight:700;font-size:13px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gh{margin:14px 0 0;font-weight:800;font-size:12px;letter-spacing:.08em;color:#9fc0ff;text-transform:uppercase}
+.brand{font-weight:800;letter-spacing:.12em;font-size:14px;border-left:4px solid #e10600;padding-left:8px;font-style:italic}
+.lb-title{text-align:center;font-size:30px;font-weight:900;letter-spacing:.05em;margin:8px 0 2px;font-style:italic;text-transform:uppercase}
+.chk{height:10px;margin:8px 0 12px;border-radius:2px;background:repeating-conic-gradient(#fff 0 25%,#15151e 0 50%) 0 0/10px 10px;opacity:.9}
+.tabs{display:flex;justify-content:center;gap:6px;margin-bottom:8px}
+.tabs button{background:#1e1e2a;border:0;color:#cfcfe0;font-weight:800;font-style:italic;letter-spacing:.08em;padding:8px 20px;border-radius:4px;border-bottom:3px solid transparent}
+.tabs button.on{color:#fff;border-bottom-color:#e10600;background:#2a2a3a}
+.lv{display:flex;justify-content:center;align-items:center;gap:6px;font-size:11px;letter-spacing:.1em;color:#9a9aae;margin-bottom:14px;text-transform:uppercase}
+.lv i{width:8px;height:8px;border-radius:50%;background:#e10600;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.tw{background:#111119;border-radius:8px;padding:10px 10px 12px;border-top:3px solid #e10600;box-shadow:0 4px 16px rgba(0,0,0,.45)}
+.tw .hd{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:900;font-style:italic;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.cat{padding:2px 8px;border-radius:3px;color:#111;font-size:12px}
+.t .cat{background:#27f4d2}.a .cat{background:#ff8000}
+.rw{display:flex;align-items:stretch;height:38px;margin-top:3px;border-radius:4px;overflow:hidden;background:linear-gradient(90deg,#2b2b3b,#1a1a25);font-style:italic}
+.pos{flex:none;width:38px;display:flex;align-items:center;justify-content:center;background:#f2f2f6;color:#15151e;font-weight:900;font-size:17px}
+.pos.p1{background:#ffd23f}.pos.p2{background:#d5d9e0}.pos.p3{background:#d9893f}
+.stripe{flex:none;width:5px}
+.rw .nm{flex:1;min-width:0;display:flex;align-items:center;padding:0 10px;font-weight:800;font-size:14px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{align-self:center;flex:none;margin-right:8px;padding:2px 7px;border-radius:3px;background:#0d0d14;border:1px solid #3a3a52;font-size:11px;font-weight:800;letter-spacing:.04em;color:#cfcfe0}
+.chg{flex:none;width:52px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;background:#0d0d14}
+.chg.up{color:#00e676}.chg.dn{color:#ff4545}.chg.nc{color:#6b6b82}.chg.nw{color:#c77dff;font-size:11px}
+.rw.fu{animation:fu 2.2s ease-out}.rw.fd{animation:fd 2.2s ease-out}
+@keyframes fu{from{box-shadow:inset 0 0 0 40px rgba(0,230,118,.45)}to{box-shadow:inset 0 0 0 40px rgba(0,230,118,0)}}
+@keyframes fd{from{box-shadow:inset 0 0 0 40px rgba(255,69,69,.45)}to{box-shadow:inset 0 0 0 40px rgba(255,69,69,0)}}
+.gh{margin:12px 0 2px;padding-left:8px;border-left:3px solid #e10600;font-weight:900;font-style:italic;font-size:12px;letter-spacing:.08em;color:#cfcfe0;text-transform:uppercase}
+.hb button{white-space:nowrap;padding:7px 9px;font-size:13px}
+.brand .sub{white-space:nowrap;font-size:11px;font-weight:600;letter-spacing:.04em}
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-<symbol id="av" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#a9b0c2"/><circle cx="50" cy="38" r="17" fill="#eceff6"/><path d="M16 90c3-21 17-31 34-31s31 10 34 31a50 50 0 0 1-68 0z" fill="#eceff6"/></symbol>
-<symbol id="crown" viewBox="0 0 64 40"><path d="M4 34L8 10l14 12L32 4l10 18 14-12 4 24z" fill="#f5c518" stroke="#b8860b" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="34" width="56" height="5" rx="2" fill="#f5c518" stroke="#b8860b" stroke-width="2"/></symbol>
-</defs></svg>
 <div id="main" hidden><header>
   <div class="brand">KHELA HOBE<div class="sub" id="upd">Loading…</div></div>
   <div class="hb"><button id="upb" hidden>⬆ Upload</button><button id="ref">↻</button><button id="out">Logout</button></div>
 </header>
-<div id="dash"><div class="lb-title">LEADER BOARD</div>
+<div id="dash" class="f1"><div class="lb-title">LEADER BOARD</div>
 <div class="co">Samuda Spec Chem Ltd.</div>
+<div class="chk"></div>
 <div class="tabs" id="tabs"><button data-p="today">TODAY</button><button data-p="week">WEEK</button><button data-p="month" class="on">MONTH</button></div>
+<div class="lv"><i></i>LIVE · updates every minute</div>
 <div id="app"><div class="msg">Loading data…</div></div>
 </div>
 <div id="uppanel" hidden>
@@ -158,8 +160,10 @@ function parseDate(s){
   const d=new Date(s); return isNaN(d)?null:d;
 }
 
-async function load(){
-  $("app").innerHTML='<div class="msg">Loading data…</div>';
+let busy=false;
+async function load(silent){
+  if(busy) return; busy=true;
+  if(!silent) $("app").innerHTML='<div class="msg">Loading data…</div>';
   try{
     if(!CONFIG.API_URL||CONFIG.API_URL.startsWith("PASTE")) throw new Error("Set API_URL in index.html CONFIG.");
     const j=await api({action:"data",token:getToken()});
@@ -184,9 +188,12 @@ async function load(){
     // Distributor Code = unique key for each distributor; shown as "Name (CODE)"
     const dn={}; rows.forEach(r=>{ if(r.dCode&&r.dist&&!dn[r.dCode]) dn[r.dCode]=r.dist });
     rows.forEach(r=>{ if(r.dCode) r.dist=(dn[r.dCode]||r.dCode)+" ("+r.dCode+")" });
-    render();
+    render(!!silent);
     $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
-  }catch(e){ $("app").innerHTML=`<div class="msg err">${esc(e.message)}</div>`; $("upd").textContent="Error" }
+  }catch(e){
+    if(silent){ $("upd").textContent="Offline - retrying" }
+    else{ $("app").innerHTML=`<div class="msg err">${esc(e.message)}</div>`; $("upd").textContent="Error" }
+  }finally{ busy=false }
 }
 
 function inPer(r){            // TODAY / WEEK (last 7 days incl. today) / MONTH (this calendar month)
@@ -203,17 +210,6 @@ function top10(cat,key,m){
   for(const r of rows){ if(r.cat!==cat||!inPer(r)||!r[key]) continue; map[r[key]]=(map[r[key]]||0)+r.val }
   return Object.entries(map).map(([k,v])=>[k,r2(v)]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10);
 }
-const AV='<svg class="av"><use href="#av"/></svg>';
-function lbCard(title,cls,list){
-  let body;
-  if(!list.length) body='<div class="msg">No data for this period</div>';
-  else{
-    const pc=i=>`<div class="pc${i?"":" first"}"><div class="rn">${i+1}</div>${i?"":'<svg class="crown"><use href="#crown"/></svg>'}<div class="ring">${AV}</div><div class="pn">${esc(list[i][0])}</div></div>`;
-    body='<div class="pod">'+[1,0,2].filter(i=>list[i]).map(pc).join("")+'</div>'+
-         list.slice(3).map((e,i)=>`<div class="pill"><span class="pr">${i+4}</span>${AV}<span class="pnm">${esc(e[0])}</span></div>`).join("");
-  }
-  return `<div class="lb ${cls}"><div class="lt">${title}</div>${body}</div>`;
-}
 function byGroup(cat,key,gk,m){
   const g={};
   for(const r of rows){
@@ -224,25 +220,65 @@ function byGroup(cat,key,gk,m){
   }
   return Object.keys(g).sort().map(k=>[k,Object.entries(g[k]).map(([n,v])=>[n,r2(v)]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,2)]);
 }
-function gLb(title,cls,groups,ok,colName){
+/* ---- F1 timing-tower ranking with previous -> current tracking ---- */
+const TEAM=["#27f4d2","#e80020","#3671c6","#ff8000","#229971","#0093cc","#6692ff","#b6babd","#52e252","#ff87bc"];
+const hue=k=>{let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))>>>0;return TEAM[h%TEAM.length]};
+// remembers the last ranking; when the order changes, the old one becomes "previous"
+function track(id,keys){
+  let st=null,changed=false;
+  try{ st=JSON.parse(localStorage.getItem("rk:"+id)||"null") }catch(e){}
+  const sig=keys.join("\u0001");
+  if(!st){ st={cur:keys,prev:null} }
+  else if(st.cur.join("\u0001")!==sig){ st={cur:keys,prev:st.cur.length?st.cur:null}; changed=true }
+  try{ localStorage.setItem("rk:"+id,JSON.stringify(st)) }catch(e){}
+  return {prev:st.prev,changed};
+}
+function row(cid,key,i,t){
+  const m=key.match(/^(.*) \(([^()]+)\)$/), nm=m?m[1]:key, id=m?m[2]:"";
+  let ch='<span class="chg nc">–</span>', fl="";
+  if(t.prev){
+    const p=t.prev.indexOf(key);
+    if(p<0) ch='<span class="chg nw">NEW</span>';
+    else{ const d=p-i;
+      if(d>0){ ch=`<span class="chg up">▲${d}</span>`; if(t.changed) fl=" fu" }
+      else if(d<0){ ch=`<span class="chg dn">▼${-d}</span>`; if(t.changed) fl=" fd" } }
+  }
+  return `<div class="rw${fl}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+}
+function fCard(cls,cat,sub,list,cid){
+  cid=per+":"+cid;
+  const keys=list.map(e=>e[0]), t=track(cid,keys);
+  const body=list.length?list.map((e,i)=>row(cid,e[0],i,t)).join(""):'<div class="msg">No data for this period</div>';
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${body}</div>`;
+}
+function gCard(cls,cat,sub,groups,ok,colName,cid,lbl){
   let body;
   if(!ok) body=`<div class="msg err">Column "${colName}" not found in sheet</div>`;
   else if(!groups.length) body='<div class="msg">No data for this period</div>';
-  else body=groups.map(([gn,list])=>`<div class="gh">${esc(gn)}</div>`+list.map((e,i)=>`<div class="pill"><span class="pr">${i+1}</span>${AV}<span class="pnm">${esc(e[0])}</span></div>`).join("")).join("");
-  return `<div class="lb ${cls}"><div class="lt">${title}</div>${body}</div>`;
+  else body=groups.map(([gn,list])=>{
+    const id=per+":"+cid+":"+gn, t=track(id,list.map(e=>e[0]));
+    return `<div class="gh">${lbl} · ${esc(gn)}</div>`+list.map((e,i)=>row(id,e[0],i,t)).join("");
+  }).join("");
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${body}</div>`;
 }
-function render(){
-  const m=per;
+function render(flip){
+  const m=per, old={};
+  if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
   $("app").innerHTML=`<div class="grid">`+
-   lbCard("THINNER · TOP 10 DISTRIBUTORS","th",top10("Thinner","dist",m))+
-   lbCard("ADHESIVE · TOP 10 DISTRIBUTORS","ad",top10("Adhesive","dist",m))+
-   lbCard("THINNER · TOP 10 SALES OFFICERS","th",top10("Thinner","so",m))+
-   lbCard("ADHESIVE · TOP 10 SALES OFFICERS","ad",top10("Adhesive","so",m))+
-   gLb("THINNER · DISTRIBUTORS BY ZONE","th",byGroup("Thinner","dist","zone",m),has.zone,"Zone")+
-   gLb("THINNER · SALES OFFICERS BY ZONE","th",byGroup("Thinner","so","zone",m),has.zone,"Zone")+
-   gLb("ADHESIVE · DISTRIBUTORS BY AREA","ad",byGroup("Adhesive","dist","area",m),has.area,"Area")+
-   gLb("ADHESIVE · SALES OFFICERS BY AREA","ad",byGroup("Adhesive","so","area",m),has.area,"Area")+
+   fCard("t","THINNER","TOP 10 DISTRIBUTORS",top10("Thinner","dist",m),"td")+
+   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",top10("Adhesive","dist",m),"ad")+
+   fCard("t","THINNER","TOP 10 SALES OFFICERS",top10("Thinner","so",m),"ts")+
+   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",top10("Adhesive","so",m),"as")+
+   gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m),has.zone,"Zone","tdz","ZONE")+
+   gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m),has.zone,"Zone","tsz","ZONE")+
+   gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m),has.area,"Area","ada","AREA")+
+   gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m),has.area,"Area","asa","AREA")+
    `</div>`;
+  if(flip) document.querySelectorAll("[data-k]").forEach(e=>{      // rows glide to their new position
+    const o=old[e.dataset.k]; if(o==null||!e.animate) return;
+    const dy=o-e.getBoundingClientRect().top;
+    if(Math.abs(dy)>2) e.animate([{transform:"translateY("+dy+"px)"},{transform:"none"}],{duration:700,easing:"cubic-bezier(.2,.8,.2,1)"});
+  });
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
   per=b.dataset.p;
@@ -348,6 +384,10 @@ $("upgo").onclick=async()=>{
     $("upd").textContent="Uploaded "+total+" rows ✔";
   }catch(err){ $("upmsg").innerHTML='<span class="err">'+esc(err.message)+'</span>'; btn.disabled=false }
 };
+
+/* ---- auto update ---- */
+setInterval(()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) },60000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) });
 
 getToken()?load():showLogin();
 </script>
