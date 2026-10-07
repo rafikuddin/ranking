@@ -10,7 +10,7 @@
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:#15151e;min-height:100vh;color:var(--tx);font:15px/1.4 system-ui,sans-serif;padding:env(safe-area-inset-top) 12px 24px}
-header{display:flex;justify-content:space-between;align-items:center;padding:14px 2px 8px}
+header{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding:14px 2px 8px}
 h1{font-size:19px;margin:0}
 .sub{color:var(--mu);font-size:12px}
 button,select{font:inherit;border:1px solid var(--bar);background:var(--card);color:var(--tx);border-radius:8px;padding:7px 10px}
@@ -76,19 +76,24 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 @keyframes fd{from{box-shadow:inset 0 0 0 40px rgba(255,69,69,.45)}to{box-shadow:inset 0 0 0 40px rgba(255,69,69,0)}}
 .gh{margin:12px 0 2px;padding-left:8px;border-left:3px solid #e10600;font-weight:900;font-style:italic;font-size:12px;letter-spacing:.08em;color:#cfcfe0;text-transform:uppercase}
 .hb button{white-space:nowrap;padding:7px 9px;font-size:13px}
+.cmp{text-align:center;font-size:11px;color:#cfcfe0;margin:-8px 0 14px;letter-spacing:.05em;text-transform:uppercase}
+.cmp b{color:#fff}
+#pwpanel input[type=password]{width:100%;font:inherit;padding:11px;margin:5px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
+#pwgo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
+#pwgo:disabled{opacity:.45}
 .brand .sub{white-space:nowrap;font-size:11px;font-weight:600;letter-spacing:.04em}
 </style>
 </head>
 <body>
 <div id="main" hidden><header>
   <div class="brand">KHELA HOBE<div class="sub" id="upd">Loading…</div></div>
-  <div class="hb"><button id="upb" hidden>⬆ Upload</button><button id="ref">↻</button><button id="out">Logout</button></div>
+  <div class="hb"><button id="upb" hidden>⬆ Upload</button><button id="pwb" title="Change password">🔑</button><button id="ref">↻</button><button id="out">Logout</button></div>
 </header>
 <div id="dash" class="f1"><div class="lb-title">LEADER BOARD</div>
 <div class="co">Samuda Spec Chem Ltd.</div>
 <div class="chk"></div>
-<div class="tabs" id="tabs"><button data-p="today">TODAY</button><button data-p="week">WEEK</button><button data-p="month" class="on">MONTH</button></div>
 <div class="lv"><i></i>LIVE · updates every minute</div>
+<div class="cmp" id="cmp"></div>
 <div id="app"><div class="msg">Loading data…</div></div>
 </div>
 <div id="uppanel" hidden>
@@ -100,6 +105,18 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
     <label class="opt"><input type="radio" name="upmode" value="append" checked> Add to existing data</label>
     <label class="opt"><input type="radio" name="upmode" value="replace"> Replace all existing data</label>
     <div class="hb" style="margin-top:14px"><button id="upgo" disabled>Upload</button><button id="upback">Back</button></div>
+  </div>
+</div>
+<div id="pwpanel" hidden>
+  <div class="card" style="margin-top:6px">
+    <h3>Change password</h3>
+    <form id="pwf">
+      <input type="password" id="pw0" placeholder="Current password" autocomplete="current-password" required>
+      <input type="password" id="pw1" placeholder="New password (min 6 characters)" autocomplete="new-password" required>
+      <input type="password" id="pw2" placeholder="Confirm new password" autocomplete="new-password" required>
+      <div id="pwmsg" class="msg" style="text-align:left;padding:6px 0"></div>
+      <div class="hb" style="margin-top:8px"><button id="pwgo" type="submit">Save password</button><button id="pwback" type="button">Back</button></div>
+    </form>
   </div>
 </div>
 </div>
@@ -125,7 +142,7 @@ const CONFIG = {
 /* ====================================== */
 
 const $ = id => document.getElementById(id);
-let rows = [], has = {zone:true, area:true}, per = "month";
+let rows = [], has = {zone:true, area:true}, per = "all";
 
 function parseCSV(t){
   const out=[];let r=[],c="",q=false;
@@ -160,7 +177,7 @@ function parseDate(s){
   const d=new Date(s); return isNaN(d)?null:d;
 }
 
-let busy=false;
+let busy=false, chg=false;
 async function load(silent){
   if(busy) return; busy=true;
   if(!silent) $("app").innerHTML='<div class="msg">Loading data…</div>';
@@ -197,6 +214,7 @@ async function load(silent){
 }
 
 function inPer(r){            // TODAY / WEEK (last 7 days incl. today) / MONTH (this calendar month)
+  if(per==="all") return true;     // no period menu: every row in the sheet counts
   if(!r.ts) return false;
   const n=new Date(), t0=new Date(n.getFullYear(),n.getMonth(),n.getDate()).getTime();
   const diff=Math.round((t0-r.ts)/864e5);
@@ -229,7 +247,7 @@ function track(id,keys){
   try{ st=JSON.parse(localStorage.getItem("rk:"+id)||"null") }catch(e){}
   const sig=keys.join("\u0001");
   if(!st){ st={cur:keys,prev:null} }
-  else if(st.cur.join("\u0001")!==sig){ st={cur:keys,prev:st.cur.length?st.cur:null}; changed=true }
+  else if(st.cur.join("\u0001")!==sig){ st={cur:keys,prev:st.cur.length?st.cur:null}; changed=true; chg=true }
   try{ localStorage.setItem("rk:"+id,JSON.stringify(st)) }catch(e){}
   return {prev:st.prev,changed};
 }
@@ -248,13 +266,13 @@ function row(cid,key,i,t){
 function fCard(cls,cat,sub,list,cid){
   cid=per+":"+cid;
   const keys=list.map(e=>e[0]), t=track(cid,keys);
-  const body=list.length?list.map((e,i)=>row(cid,e[0],i,t)).join(""):'<div class="msg">No data for this period</div>';
+  const body=list.length?list.map((e,i)=>row(cid,e[0],i,t)).join(""):'<div class="msg">No data</div>';
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${body}</div>`;
 }
 function gCard(cls,cat,sub,groups,ok,colName,cid,lbl){
   let body;
   if(!ok) body=`<div class="msg err">Column "${colName}" not found in sheet</div>`;
-  else if(!groups.length) body='<div class="msg">No data for this period</div>';
+  else if(!groups.length) body='<div class="msg">No data</div>';
   else body=groups.map(([gn,list])=>{
     const id=per+":"+cid+":"+gn, t=track(id,list.map(e=>e[0]));
     return `<div class="gh">${lbl} · ${esc(gn)}</div>`+list.map((e,i)=>row(id,e[0],i,t)).join("");
@@ -262,7 +280,7 @@ function gCard(cls,cat,sub,groups,ok,colName,cid,lbl){
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${body}</div>`;
 }
 function render(flip){
-  const m=per, old={};
+  const m=per, old={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
   $("app").innerHTML=`<div class="grid">`+
    fCard("t","THINNER","TOP 10 DISTRIBUTORS",top10("Thinner","dist",m),"td")+
@@ -274,18 +292,20 @@ function render(flip){
    gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m),has.area,"Area","ada","AREA")+
    gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m),has.area,"Area","asa","AREA")+
    `</div>`;
+  // "previous update -> current update" line
+  let meta=null; try{ meta=JSON.parse(localStorage.getItem("rk:meta")||"null") }catch(e){}
+  if(!meta) meta={cur:Date.now(),prev:null};
+  else if(chg) meta={cur:Date.now(),prev:meta.cur};
+  try{ localStorage.setItem("rk:meta",JSON.stringify(meta)) }catch(e){}
+  const fm=t=>new Date(t).toLocaleString([], {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+  $("cmp").innerHTML=meta.prev?`Previous update <b>${fm(meta.prev)}</b> → Current update <b>${fm(meta.cur)}</b>`:`Current update <b>${fm(meta.cur)}</b>`;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{      // rows glide to their new position
     const o=old[e.dataset.k]; if(o==null||!e.animate) return;
     const dy=o-e.getBoundingClientRect().top;
     if(Math.abs(dy)>2) e.animate([{transform:"translateY("+dy+"px)"},{transform:"none"}],{duration:700,easing:"cubic-bezier(.2,.8,.2,1)"});
   });
 }
-document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
-  per=b.dataset.p;
-  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b));
-  render();
-});
-$("ref").onclick=load;
+$("ref").onclick=()=>{ $("upd").textContent="Refreshing…"; load(true) };
 /* ---- auth ---- */
 async function api(body){
   const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
@@ -294,7 +314,7 @@ async function api(body){
 const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
 const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk")};
 function showLogin(msg){ $("main").hidden=true; $("login").hidden=false; $("lerr").textContent=msg||""; $("lp").value="" }
-function showMain(){ $("login").hidden=true; $("main").hidden=false; $("uppanel").hidden=true; $("dash").hidden=false }
+function showMain(){ $("login").hidden=true; $("main").hidden=false; $("uppanel").hidden=true; $("pwpanel").hidden=true; $("dash").hidden=false }
 $("lf").onsubmit=async e=>{
   e.preventDefault(); const b=$("lb"); b.disabled=true; b.textContent="Signing in…"; $("lerr").textContent="";
   try{
@@ -310,7 +330,7 @@ $("out").onclick=async()=>{ const t=getToken(); clearToken(); rows=[]; showLogin
 /* ---- upload (admin) ---- */
 let up={header:null,rows:[]};
 $("uphelp").textContent="First row must have these headings: "+Object.values(CONFIG.COL).join(", ")+" (Zone and Area are optional). Employee ID must be unique for each Sales Officer. File: .csv or .xlsx";
-$("upb").onclick=()=>{ $("dash").hidden=true; $("uppanel").hidden=false; $("upmsg").textContent="" };
+$("upb").onclick=()=>{ $("pwpanel").hidden=true; $("dash").hidden=true; $("uppanel").hidden=false; $("upmsg").textContent="" };
 $("upback").onclick=()=>{ $("uppanel").hidden=true; $("dash").hidden=false };
 function loadXLSX(){
   return window.XLSX?Promise.resolve():new Promise((ok,no)=>{
@@ -383,6 +403,24 @@ $("upgo").onclick=async()=>{
     await load();
     $("upd").textContent="Uploaded "+total+" rows ✔";
   }catch(err){ $("upmsg").innerHTML='<span class="err">'+esc(err.message)+'</span>'; btn.disabled=false }
+};
+
+/* ---- change password ---- */
+$("pwb").onclick=()=>{ $("dash").hidden=true; $("uppanel").hidden=true; $("pwpanel").hidden=false; $("pwmsg").textContent="" };
+$("pwback").onclick=()=>{ $("pwpanel").hidden=true; $("dash").hidden=false };
+$("pwf").onsubmit=async e=>{
+  e.preventDefault();
+  const o=$("pw0").value, n=$("pw1").value, c=$("pw2").value, m=$("pwmsg"), b=$("pwgo");
+  if(n.length<6){ m.innerHTML='<span class="err">New password must be at least 6 characters.</span>'; return }
+  if(n!==c){ m.innerHTML='<span class="err">New passwords do not match.</span>'; return }
+  b.disabled=true; m.textContent="Saving…";
+  try{
+    const j=await api({action:"changepw",token:getToken(),oldPassword:o,newPassword:n});
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+    $("pw0").value=""; $("pw1").value=""; $("pw2").value="";
+    m.textContent="✔ Password changed. Use the new password next time you sign in.";
+  }catch(err){ m.innerHTML='<span class="err">'+esc(err.message)+'</span>' }
+  b.disabled=false;
 };
 
 /* ---- auto update ---- */
