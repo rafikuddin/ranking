@@ -82,9 +82,47 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 #pwgo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
 #pwgo:disabled{opacity:.45}
 .brand .sub{white-space:nowrap;font-size:11px;font-weight:600;letter-spacing:.04em}
+.prize{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 8px;padding:7px 10px;border-radius:4px;background:linear-gradient(90deg,#ffd23f,#ff9f1c);color:#15151e;font-weight:900;font-style:italic;letter-spacing:.08em;font-size:13px;text-transform:uppercase}
+.prize.gift{background:linear-gradient(90deg,#27f4d2,#3b9cff)}
+#run{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:#15151e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-style:italic}
+#run[hidden]{display:none}
+#run .stage{position:relative;width:100%;height:120px;overflow:hidden}
+#run .rabbit{position:absolute;bottom:16px;left:0;animation:runx 2.3s linear infinite}
+@keyframes runx{from{transform:translateX(-140px)}to{transform:translateX(100vw)}}
+#run .hop{animation:hop .3s ease-in-out infinite alternate}
+@keyframes hop{from{transform:translateY(0)}to{transform:translateY(-16px)}}
+#run .ground{position:absolute;left:0;right:0;bottom:10px;height:3px;background:repeating-linear-gradient(90deg,#e10600 0 18px,transparent 18px 30px);animation:gr .45s linear infinite}
+@keyframes gr{to{background-position:-30px 0}}
+#run .lgA,#run .lgB{transform-box:fill-box;transform-origin:50% 0;animation:leg .3s ease-in-out infinite alternate}
+#run .lgB{animation-direction:alternate-reverse}
+@keyframes leg{from{transform:rotate(-38deg)}to{transform:rotate(38deg)}}
+#run .rt{font-weight:900;letter-spacing:.22em;font-size:18px}
+#run .rs{color:#9a9aae;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
 </style>
 </head>
 <body>
+<div id="run" hidden>
+  <div class="stage">
+    <div class="rabbit"><div class="hop">
+      <svg viewBox="0 0 120 80" width="112" height="75" aria-hidden="true">
+        <g class="lgB"><ellipse cx="38" cy="62" rx="6.5" ry="14" fill="#d9deea"/></g>
+        <g class="lgA"><ellipse cx="76" cy="62" rx="5.5" ry="13" fill="#d9deea"/></g>
+        <circle cx="24" cy="42" r="8" fill="#fff"/>
+        <ellipse cx="55" cy="46" rx="31" ry="17" fill="#fff"/>
+        <ellipse cx="86" cy="14" rx="4.5" ry="13" fill="#fff" transform="rotate(-12 86 14)"/>
+        <ellipse cx="86" cy="15" rx="2" ry="9" fill="#ffb3c7" transform="rotate(-12 86 14)"/>
+        <ellipse cx="96" cy="15" rx="4.5" ry="12" fill="#fff" transform="rotate(10 96 15)"/>
+        <ellipse cx="96" cy="16" rx="2" ry="8" fill="#ffb3c7" transform="rotate(10 96 15)"/>
+        <circle cx="91" cy="36" r="13" fill="#fff"/>
+        <circle cx="96" cy="34" r="2.3" fill="#222"/>
+        <circle cx="103" cy="39" r="2.5" fill="#ff7a9c"/>
+      </svg>
+    </div></div>
+    <div class="ground"></div>
+  </div>
+  <div class="rt">REFRESHING…</div>
+  <div class="rs">Updating rankings</div>
+</div>
 <div id="main" hidden><header>
   <div class="brand">KHELA HOBE<div class="sub" id="upd">Loading…</div></div>
   <div class="hb"><button id="upb" hidden>⬆ Upload</button><button id="pwb" title="Change password">🔑</button><button id="ref">↻</button><button id="out">Logout</button></div>
@@ -137,7 +175,9 @@ const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycbwtwstyUkvPzIy0NWiSzYqYZ1Nqcfi7m8IwDKQOpFCnYPLRMcrcplDf_nwX2G1-Axdi/exec",   // ends with /exec
   // Column header names in your sheet (case-insensitive):
   COL: { date:"Date", distributor:"Distributor", officer:"Sales Officer", category:"Category", value:"Sales Value", zone:"Zone", area:"Area", empId:"Employee ID", distCode:"Distributor Code" },
-  CURRENCY: "৳"
+  CURRENCY: "৳",
+  PRIZE_DIST: "Thailand",   // shown on the Top 10 Distributor cards
+  GIFT_SO: "Sri Lanka"      // shown on the Top 10 Sales Officer cards
 };
 /* ====================================== */
 
@@ -177,17 +217,9 @@ function parseDate(s){
   const d=new Date(s); return isNaN(d)?null:d;
 }
 
-let busy=false, chg=false;
-async function load(silent){
-  if(busy) return; busy=true;
-  if(!silent) $("app").innerHTML='<div class="msg">Loading data…</div>';
-  try{
-    if(!CONFIG.API_URL||CONFIG.API_URL.startsWith("PASTE")) throw new Error("Set API_URL in index.html CONFIG.");
-    const j=await api({action:"data",token:getToken()});
-    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+/* turns the sheet rows into ranked data; shared by login, cached start-up and refresh */
+function ingest(j){
     const data=[j.header,...j.rows];
-    showMain();
-    $("upb").hidden = j.role!=="admin";
     const head=data[0].map(h=>h.trim().toLowerCase());
     const idx={}; for(const k in CONFIG.COL){ idx[k]=head.indexOf(CONFIG.COL[k].toLowerCase()); if(idx[k]<0 && k!=="zone" && k!=="area" && k!=="empId" && k!=="distCode") throw new Error(`Column "${CONFIG.COL[k]}" not found. Found: ${data[0].join(", ")}`) }
     rows=data.slice(1).filter(r=>r.length>1).map(r=>{
@@ -205,12 +237,35 @@ async function load(silent){
     // Distributor Code = unique key for each distributor; shown as "Name (CODE)"
     const dn={}; rows.forEach(r=>{ if(r.dCode&&r.dist&&!dn[r.dCode]) dn[r.dCode]=r.dist });
     rows.forEach(r=>{ if(r.dCode) r.dist=(dn[r.dCode]||r.dCode)+" ("+r.dCode+")" });
+}
+function saveCache(j){            // lets the app open instantly next time (only when "keep me signed in")
+  try{ if(localStorage.getItem("tk")) localStorage.setItem("rk:data",JSON.stringify({header:j.header,rows:j.rows,role:j.role})) }catch(e){}
+}
+function showNow(d,flip){
+  ingest(d); showMain(); $("upb").hidden=d.role!=="admin"; saveCache(d); render(!!flip);
+  $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+}
+let busy=false, chg=false;
+function run(on){ $("run").hidden=!on }
+async function load(silent,anim){
+  if(busy){                                   // a refresh is already running: keep the rabbit until it finishes
+    if(anim){ run(true); const w=setInterval(()=>{ if(!busy){ clearInterval(w); run(false) } },200) }
+    return;
+  }
+  busy=true; const t0=Date.now(); if(anim) run(true);
+  if(!silent) $("app").innerHTML='<div class="msg">Loading data…</div>';
+  try{
+    if(!CONFIG.API_URL||CONFIG.API_URL.startsWith("PASTE")) throw new Error("Set API_URL in index.html CONFIG.");
+    const j=await api({action:"data",token:getToken()});
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+    ingest(j); showMain(); $("upb").hidden=j.role!=="admin"; saveCache(j);
+    if(anim){ const w=500-(Date.now()-t0); if(w>0) await new Promise(r=>setTimeout(r,w)); run(false) }   // rabbit shows at least half a second
     render(!!silent);
     $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
   }catch(e){
     if(silent){ $("upd").textContent="Offline - retrying" }
     else{ $("app").innerHTML=`<div class="msg err">${esc(e.message)}</div>`; $("upd").textContent="Error" }
-  }finally{ busy=false }
+  }finally{ busy=false; if(anim) run(false) }
 }
 
 function inPer(r){            // TODAY / WEEK (last 7 days incl. today) / MONTH (this calendar month)
@@ -263,11 +318,11 @@ function row(cid,key,i,t){
   }
   return `<div class="rw${fl}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
-function fCard(cls,cat,sub,list,cid){
+function fCard(cls,cat,sub,list,cid,bd){
   cid=per+":"+cid;
   const keys=list.map(e=>e[0]), t=track(cid,keys);
   const body=list.length?list.map((e,i)=>row(cid,e[0],i,t)).join(""):'<div class="msg">No data</div>';
-  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${body}</div>`;
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
 function gCard(cls,cat,sub,groups,ok,colName,cid,lbl){
   let body;
@@ -279,14 +334,16 @@ function gCard(cls,cat,sub,groups,ok,colName,cid,lbl){
   }).join("");
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${body}</div>`;
 }
+const prizeBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST)} 🇹🇭</div>`;
+const giftBox=()=>`<div class="prize gift">🎁 GIFT · ${esc(CONFIG.GIFT_SO)} 🇱🇰</div>`;
 function render(flip){
   const m=per, old={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
   $("app").innerHTML=`<div class="grid">`+
-   fCard("t","THINNER","TOP 10 DISTRIBUTORS",top10("Thinner","dist",m),"td")+
-   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",top10("Adhesive","dist",m),"ad")+
-   fCard("t","THINNER","TOP 10 SALES OFFICERS",top10("Thinner","so",m),"ts")+
-   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",top10("Adhesive","so",m),"as")+
+   fCard("t","THINNER","TOP 10 DISTRIBUTORS",top10("Thinner","dist",m),"td",prizeBox())+
+   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",top10("Adhesive","dist",m),"ad",prizeBox())+
+   fCard("t","THINNER","TOP 10 SALES OFFICERS",top10("Thinner","so",m),"ts",giftBox())+
+   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",top10("Adhesive","so",m),"as",giftBox())+
    gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m),has.zone,"Zone","tdz","ZONE")+
    gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m),has.zone,"Zone","tsz","ZONE")+
    gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m),has.area,"Area","ada","AREA")+
@@ -305,14 +362,14 @@ function render(flip){
     if(Math.abs(dy)>2) e.animate([{transform:"translateY("+dy+"px)"},{transform:"none"}],{duration:700,easing:"cubic-bezier(.2,.8,.2,1)"});
   });
 }
-$("ref").onclick=()=>{ $("upd").textContent="Refreshing…"; load(true) };
+$("ref").onclick=()=>{ $("upd").textContent="Refreshing…"; load(true,true) };
 /* ---- auth ---- */
 async function api(body){
   const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
   return r.json();
 }
 const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
-const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk")};
+const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk");try{localStorage.removeItem("rk:data")}catch(e){}};
 function showLogin(msg){ $("main").hidden=true; $("login").hidden=false; $("lerr").textContent=msg||""; $("lp").value="" }
 function showMain(){ $("login").hidden=true; $("main").hidden=false; $("uppanel").hidden=true; $("pwpanel").hidden=true; $("dash").hidden=false }
 $("lf").onsubmit=async e=>{
@@ -322,7 +379,9 @@ $("lf").onsubmit=async e=>{
     const j=await api({action:"login",username:$("lu").value,password:$("lp").value});
     if(!j.ok) throw new Error(j.error);
     (  $("lr").checked?localStorage:sessionStorage ).setItem("tk",j.token);
-    $("lp").value=""; load();
+    $("lp").value="";
+    if(j.sales) showNow({header:j.sales.header,rows:j.sales.rows,role:j.role},false);   // fast path: data came with login
+    else load(false,true);                                                                // older backend: fetch separately
   }catch(err){ $("lerr").textContent=err.message }
   b.disabled=false; b.textContent="Sign in";
 };
@@ -427,7 +486,12 @@ $("pwf").onsubmit=async e=>{
 setInterval(()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) },60000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) });
 
-getToken()?load():showLogin();
+(function boot(){
+  if(!getToken()){ showLogin(); return }
+  let c=null; try{ c=JSON.parse(localStorage.getItem("rk:data")||"null") }catch(e){}
+  if(c&&c.rows){ try{ showNow(c,false); $("upd").textContent="Updating…"; load(true); return }catch(e){} }
+  load(false,true);
+})();
 </script>
 </body>
 </html>
