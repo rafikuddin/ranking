@@ -100,6 +100,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 @keyframes gr{to{background-position:-44px 0}}
 #run .rt{font-weight:900;letter-spacing:.22em;font-size:18px}
 #run .rs{color:#9a9aae;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.note{margin:0 0 4px;font-size:11px;color:#9a9aae;letter-spacing:.05em;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -181,7 +182,7 @@ const CONFIG = {
   PRIZE_DIST: "Thailand",   // shown on the Distributor cards
   GIFT_SO: "Sri Lanka",     // shown on the Sales Officer cards
   SHOW_TOP10: true,         // the 4 "Top 10" cards
-  SHOW_ZONE_AREA: false     // true = also show the zone-wise / area-wise 1st & 2nd cards
+  SHOW_ZONE_AREA: true      // zone-wise (Thinner) / area-wise (Adhesive) 1st & 2nd cards - Top 10 people are NOT repeated here
 };
 /* ====================================== */
 
@@ -287,10 +288,10 @@ function top10(cat,key,m){
   for(const r of rows){ if(r.cat!==cat||!inPer(r)||!r[key]) continue; map[r[key]]=(map[r[key]]||0)+r.val }
   return Object.entries(map).map(([k,v])=>[k,r2(v)]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10);
 }
-function byGroup(cat,key,gk,m){
+function byGroup(cat,key,gk,m,ex){
   const g={};
   for(const r of rows){
-    if(r.cat!==cat||!inPer(r)||!r[key]) continue;
+    if(r.cat!==cat||!inPer(r)||!r[key]||(ex&&ex.has(r[key]))) continue;
     const k=r[gk]||"Unassigned";
     if(!g[k]) g[k]={};
     g[k][r[key]]=(g[k][r[key]]||0)+r.val;
@@ -343,16 +344,19 @@ const giftBox=()=>`<div class="prize gift">🎁 GIFT · ${esc(CONFIG.GIFT_SO)} �
 function render(flip){
   const m=per, old={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
+  const T=(c,k)=>top10(c,k,m), keys=l=>new Set(l.map(e=>e[0]));
+  const tD=T("Thinner","dist"), aD=T("Adhesive","dist"), tS=T("Thinner","so"), aS=T("Adhesive","so");
   const top10Cards=CONFIG.SHOW_TOP10?(
-   fCard("t","THINNER","TOP 10 DISTRIBUTORS",top10("Thinner","dist",m),"td",prizeBox())+
-   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",top10("Adhesive","dist",m),"ad",prizeBox())+
-   fCard("t","THINNER","TOP 10 SALES OFFICERS",top10("Thinner","so",m),"ts",giftBox())+
-   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",top10("Adhesive","so",m),"as",giftBox())):"";
+   fCard("t","THINNER","TOP 10 DISTRIBUTORS",tD,"td",prizeBox())+
+   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",aD,"ad",prizeBox())+
+   fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",giftBox())+
+   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",giftBox())):"";
+  const nz='<div class="note">1st &amp; 2nd of each zone · Top 10 not repeated</div>', na='<div class="note">1st &amp; 2nd of each area · Top 10 not repeated</div>';
   const zoneCards=CONFIG.SHOW_ZONE_AREA?(
-   gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m),has.zone,"Zone","tdz","ZONE",prizeBox())+
-   gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m),has.zone,"Zone","tsz","ZONE",giftBox())+
-   gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m),has.area,"Area","ada","AREA",prizeBox())+
-   gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m),has.area,"Area","asa","AREA",giftBox())):"";
+   gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m,keys(tD)),has.zone,"Zone","tdz","ZONE",nz)+
+   gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m,keys(tS)),has.zone,"Zone","tsz","ZONE",nz)+
+   gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m,keys(aD)),has.area,"Area","ada","AREA",na)+
+   gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m,keys(aS)),has.area,"Area","asa","AREA",na)):"";
   $("app").innerHTML=`<div class="grid">`+top10Cards+zoneCards+`</div>`;
   // "previous update -> current update" line
   let meta=null; try{ meta=JSON.parse(localStorage.getItem("rk:meta")||"null") }catch(e){}
