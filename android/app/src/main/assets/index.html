@@ -75,13 +75,23 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 @keyframes fu{from{box-shadow:inset 0 0 0 40px rgba(0,230,118,.45)}to{box-shadow:inset 0 0 0 40px rgba(0,230,118,0)}}
 @keyframes fd{from{box-shadow:inset 0 0 0 40px rgba(255,69,69,.45)}to{box-shadow:inset 0 0 0 40px rgba(255,69,69,0)}}
 .gh{margin:12px 0 2px;padding-left:8px;border-left:3px solid #e10600;font-weight:900;font-style:italic;font-size:12px;letter-spacing:.08em;color:#cfcfe0;text-transform:uppercase}
-.hb button{white-space:nowrap;padding:7px 9px;font-size:13px}
+.hb button{white-space:nowrap;padding:7px 11px;font-size:15px}
+.mw{position:relative}
+#menu{position:absolute;right:0;top:calc(100% + 6px);min-width:210px;background:#1e1e2a;border:1px solid #33334a;border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.65);z-index:50;padding:6px}
+#menu[hidden]{display:none}
+#menu button{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:6px;padding:12px;font-size:14px;color:#fff;white-space:nowrap}
+#menu button[hidden]{display:none}
+#menu button:active{background:#2a2a3a}
+#menu #out{color:#ff6b6b;border-top:1px solid #33334a;border-radius:0 0 6px 6px;margin-top:4px}
+#aupanel input,#aupanel select{width:100%;font:inherit;padding:11px;margin:5px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
+#augo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
+#augo:disabled{opacity:.45}
 .cmp{text-align:center;font-size:11px;color:#cfcfe0;margin:-8px 0 14px;letter-spacing:.05em;text-transform:uppercase}
 .cmp b{color:#fff}
 #pwpanel input[type=password]{width:100%;font:inherit;padding:11px;margin:5px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
 #pwgo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
 #pwgo:disabled{opacity:.45}
-.brand .sub{white-space:nowrap;font-size:11px;font-weight:600;letter-spacing:.04em}
+.brand .sub{white-space:normal;max-width:210px;font-size:11px;font-weight:600;letter-spacing:.04em}
 .prize{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 8px;padding:7px 10px;border-radius:4px;background:linear-gradient(90deg,#ffd23f,#ff9f1c);color:#15151e;font-weight:900;font-style:italic;letter-spacing:.08em;font-size:13px;text-transform:uppercase}
 .prize.gift{background:linear-gradient(90deg,#27f4d2,#3b9cff)}
 #run{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:#15151e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-style:italic}
@@ -133,7 +143,16 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 </div>
 <div id="main" hidden><header>
   <div class="brand">KHELA HOBE<div class="sub" id="upd">Loading…</div></div>
-  <div class="hb"><button id="upb" hidden>⬆ Upload</button><button id="pwb" title="Change password">🔑</button><button id="ref">↻</button><button id="out">Logout</button></div>
+  <div class="hb"><button id="ref" title="Refresh">↻</button>
+    <div class="mw"><button id="mbtn" title="Menu">☰</button>
+      <div id="menu" hidden>
+        <button id="upb" hidden>⬆ Upload data</button>
+        <button id="aub" hidden>＋ Add user</button>
+        <button id="pwb">🔑 Change password</button>
+        <button id="out">⎋ Logout</button>
+      </div>
+    </div>
+  </div>
 </header>
 <div id="dash" class="f1"><div class="lb-title">LEADER BOARD</div>
 <div class="co">Samuda Spec Chem Ltd.</div>
@@ -151,6 +170,19 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
     <label class="opt"><input type="radio" name="upmode" value="append" checked> Add to existing data</label>
     <label class="opt"><input type="radio" name="upmode" value="replace"> Replace all existing data</label>
     <div class="hb" style="margin-top:14px"><button id="upgo" disabled>Upload</button><button id="upback">Back</button></div>
+  </div>
+</div>
+<div id="aupanel" hidden>
+  <div class="card" style="margin-top:6px">
+    <h3>Add user</h3>
+    <form id="auf" autocomplete="off">
+      <input type="text" id="au_name" placeholder="Full name" autocomplete="off">
+      <input type="text" id="au_user" placeholder="Username (e.g. rahim01)" autocapitalize="none" autocomplete="off" required>
+      <input type="password" id="au_pass" placeholder="Password (min 6 characters)" autocomplete="new-password" required>
+      <select id="au_role"><option value="viewer">Viewer - dashboard only</option><option value="admin">Admin - can upload data and add users</option></select>
+      <div id="aumsg" class="msg" style="text-align:left;padding:6px 0"></div>
+      <div class="hb" style="margin-top:8px"><button id="augo" type="submit">Add user</button><button id="auback" type="button">Back</button></div>
+    </form>
   </div>
 </div>
 <div id="pwpanel" hidden>
@@ -184,9 +216,8 @@ const CONFIG = {
   // Column header names in your sheet (case-insensitive):
   COL: { date:"Date", distributor:"Distributor", officer:"Sales Officer", category:"Category", value:"Sales Value", zone:"Zone", area:"Area", empId:"Employee ID", distCode:"Distributor Code" },
   CURRENCY: "৳",
-  PRIZE_DIST: "Thailand",   // shown on the Distributor cards
-  GIFT_SO: "Sri Lanka",
-  GIFT_DIST5: "Sri Lanka Tour",                 // gift for the Top 5 Distributors (outside the Top 10)
+  PRIZE_DIST: "Thailand Tour",   // prize on the Top 10 Distributor cards
+  PRIZE_DIST5: "Sri Lanka Tour",                // prize on the Top 5 Distributor cards (outside the Top 10)
   CEREMONY: "National Award Giving Ceremony",   // Top 10 Sales Officers attend this     // shown on the Sales Officer cards
   SHOW_TOP10: true,         // the 4 "Top 10" cards
   SHOW_ZONE_AREA: true      // zone-wise (Thinner) / area-wise (Adhesive) 1st & 2nd cards - Top 10 people are NOT repeated here
@@ -254,10 +285,11 @@ function saveCache(j){            // lets the app open instantly next time (only
   try{ if(localStorage.getItem("tk")) localStorage.setItem("rk:data",JSON.stringify({header:j.header,rows:j.rows,role:j.role})) }catch(e){}
 }
 function showNow(d,flip){
-  ingest(d); showMain(); $("upb").hidden=d.role!=="admin"; saveCache(d); render(!!flip);
+  ingest(d); showMain(); setRole(d.role); saveCache(d); render(!!flip);
   $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
 }
-let busy=false, chg=false;
+let busy=false, chg=false, retryN=0, retryT=null;
+function scheduleRetry(){ if(retryN>=4) return; clearTimeout(retryT); retryN++; retryT=setTimeout(()=>load(true),4000*retryN) }
 function run(on){ $("run").hidden=!on }
 async function load(silent,anim){
   if(busy){                                   // a refresh is already running: keep the car running until it finishes
@@ -270,12 +302,17 @@ async function load(silent,anim){
     if(!CONFIG.API_URL||CONFIG.API_URL.startsWith("PASTE")) throw new Error("Set API_URL in index.html CONFIG.");
     const j=await api({action:"data",token:getToken()});
     if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
-    ingest(j); showMain(); $("upb").hidden=j.role!=="admin"; saveCache(j);
+    ingest(j); showMain(); setRole(j.role); saveCache(j);
     if(anim){ const w=500-(Date.now()-t0); if(w>0) await new Promise(r=>setTimeout(r,w)); run(false) }   // car shows at least half a second
     render(!!silent);
+    retryN=0;
     $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
   }catch(e){
-    if(silent){ $("upd").textContent="Offline - retrying" }
+    if(silent){
+      const net=(e.name==="TypeError"||e.name==="AbortError");
+      $("upd").textContent=net?"Offline - retrying":"Update failed: "+String(e.message).slice(0,90);
+      scheduleRetry();
+    }
     else{ $("app").innerHTML=`<div class="msg err">${esc(e.message)}</div>`; $("upd").textContent="Error" }
   }finally{ busy=false; if(anim) run(false) }
 }
@@ -348,8 +385,7 @@ function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
 const prizeBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST)} 🇹🇭</div>`;
-const giftBox=()=>`<div class="prize gift">🎁 GIFT · ${esc(CONFIG.GIFT_SO)} 🇱🇰</div>`;
-const tourBox=()=>`<div class="prize">🎁 GIFT · ${esc(CONFIG.GIFT_DIST5)} 🇱🇰</div><div class="note">Top 10 names are not repeated here</div>`;
+const tourBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST5)} 🇱🇰</div><div class="note">Top 10 names are not repeated here</div>`;
 const cerBox=()=>`<div class="prize cer">🎖 ATTEND · ${esc(CONFIG.CEREMONY)}</div>`;
 function render(flip){
   const m=per, old={}; chg=false;
@@ -362,8 +398,8 @@ function render(flip){
    fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",aD,"ad",prizeBox(),1)+
    fCard("t","THINNER","TOP 5 DISTRIBUTORS",t5D,"t5d",tourBox())+
    fCard("a","ADHESIVE","TOP 5 DISTRIBUTORS",a5D,"a5d",tourBox())+
-   fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",giftBox()+cerBox(),1)+
-   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",giftBox()+cerBox(),1)):"";
+   fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",cerBox(),1)+
+   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",cerBox(),1)):"";
   const nz='<div class="note">1st &amp; 2nd of each zone · Top 10 not repeated</div>', na='<div class="note">1st &amp; 2nd of each area · Top 10 not repeated</div>';
   const zoneCards=CONFIG.SHOW_ZONE_AREA?(
    gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m,keys(tD)),has.zone,"Zone","tdz","ZONE",nz)+
@@ -387,13 +423,20 @@ function render(flip){
 $("ref").onclick=()=>{ $("upd").textContent="Refreshing…"; load(true,true) };
 /* ---- auth ---- */
 async function api(body){
-  const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
-  return r.json();
+  const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),30000);       // never hang forever
+  try{
+    const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body),signal:ctl.signal});
+    const t=await r.text();
+    try{ return JSON.parse(t) }
+    catch(_){ throw new Error("Server sent an unexpected reply - check the Apps Script deployment (New version, access: Anyone).") }
+  }finally{ clearTimeout(to) }
 }
 const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
 const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk");try{localStorage.removeItem("rk:data")}catch(e){}};
 function showLogin(msg){ $("main").hidden=true; $("login").hidden=false; $("lerr").textContent=msg||""; $("lp").value="" }
-function showMain(){ $("login").hidden=true; $("main").hidden=false; $("uppanel").hidden=true; $("pwpanel").hidden=true; $("dash").hidden=false }
+function setRole(r){ $("upb").hidden=r!=="admin"; $("aub").hidden=r!=="admin" }
+function openPanel(id){ ["dash","uppanel","pwpanel","aupanel"].forEach(x=>$(x).hidden=x!==id); $("menu").hidden=true }
+function showMain(){ $("login").hidden=true; $("main").hidden=false; openPanel("dash") }
 $("lf").onsubmit=async e=>{
   e.preventDefault(); const b=$("lb"); b.disabled=true; b.textContent="Signing in…"; $("lerr").textContent="";
   try{
@@ -411,8 +454,8 @@ $("out").onclick=async()=>{ const t=getToken(); clearToken(); rows=[]; showLogin
 /* ---- upload (admin) ---- */
 let up={header:null,rows:[]};
 $("uphelp").textContent="First row must have these headings: "+Object.values(CONFIG.COL).join(", ")+" (Zone and Area are optional). Employee ID must be unique for each Sales Officer. File: .csv or .xlsx";
-$("upb").onclick=()=>{ $("pwpanel").hidden=true; $("dash").hidden=true; $("uppanel").hidden=false; $("upmsg").textContent="" };
-$("upback").onclick=()=>{ $("uppanel").hidden=true; $("dash").hidden=false };
+$("upb").onclick=()=>{ openPanel("uppanel"); $("upmsg").textContent="" };
+$("upback").onclick=()=>openPanel("dash");
 function loadXLSX(){
   return window.XLSX?Promise.resolve():new Promise((ok,no)=>{
     const s=document.createElement("script");
@@ -486,9 +529,28 @@ $("upgo").onclick=async()=>{
   }catch(err){ $("upmsg").innerHTML='<span class="err">'+esc(err.message)+'</span>'; btn.disabled=false }
 };
 
+/* ---- menu + add user ---- */
+$("mbtn").onclick=e=>{ e.stopPropagation(); $("menu").hidden=!$("menu").hidden };
+document.addEventListener("click",()=>{ $("menu").hidden=true });
+$("aub").onclick=()=>{ openPanel("aupanel"); $("aumsg").textContent="" };
+$("auback").onclick=()=>openPanel("dash");
+$("auf").onsubmit=async e=>{
+  e.preventDefault();
+  const m=$("aumsg"), b=$("augo"), pw=$("au_pass").value;
+  if(pw.length<6){ m.innerHTML='<span class="err">Password must be at least 6 characters.</span>'; return }
+  b.disabled=true; m.textContent="Saving…";
+  try{
+    const j=await api({action:"adduser",token:getToken(),name:$("au_name").value,username:$("au_user").value,password:pw,role:$("au_role").value});
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+    m.textContent="✔ User added: "+$("au_user").value.trim().toLowerCase();
+    $("au_name").value=""; $("au_user").value=""; $("au_pass").value=""; $("au_role").value="viewer";
+  }catch(err){ m.innerHTML='<span class="err">'+esc(err.message)+'</span>' }
+  b.disabled=false;
+};
+
 /* ---- change password ---- */
-$("pwb").onclick=()=>{ $("dash").hidden=true; $("uppanel").hidden=true; $("pwpanel").hidden=false; $("pwmsg").textContent="" };
-$("pwback").onclick=()=>{ $("pwpanel").hidden=true; $("dash").hidden=false };
+$("pwb").onclick=()=>{ openPanel("pwpanel"); $("pwmsg").textContent="" };
+$("pwback").onclick=()=>openPanel("dash");
 $("pwf").onsubmit=async e=>{
   e.preventDefault();
   const o=$("pw0").value, n=$("pw1").value, c=$("pw2").value, m=$("pwmsg"), b=$("pwgo");
@@ -504,6 +566,7 @@ $("pwf").onsubmit=async e=>{
   b.disabled=false;
 };
 
+window.addEventListener("online",()=>{ if(getToken()&&!$("main").hidden) load(true) });
 /* ---- auto update ---- */
 setInterval(()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) },60000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) });
