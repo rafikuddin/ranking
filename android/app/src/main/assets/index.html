@@ -180,7 +180,8 @@ const CONFIG = {
   CURRENCY: "৳",
   PRIZE_DIST: "Thailand",   // shown on the Distributor cards
   GIFT_SO: "Sri Lanka",     // shown on the Sales Officer cards
-  SHOW_TOP10: false         // true = also show the 4 "Top 10" cards
+  SHOW_TOP10: true,         // the 4 "Top 10" cards
+  SHOW_ZONE_AREA: false     // true = also show the zone-wise / area-wise 1st & 2nd cards
 };
 /* ====================================== */
 
@@ -347,12 +348,12 @@ function render(flip){
    fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",top10("Adhesive","dist",m),"ad",prizeBox())+
    fCard("t","THINNER","TOP 10 SALES OFFICERS",top10("Thinner","so",m),"ts",giftBox())+
    fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",top10("Adhesive","so",m),"as",giftBox())):"";
-  $("app").innerHTML=`<div class="grid">`+top10Cards+
+  const zoneCards=CONFIG.SHOW_ZONE_AREA?(
    gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m),has.zone,"Zone","tdz","ZONE",prizeBox())+
    gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m),has.zone,"Zone","tsz","ZONE",giftBox())+
    gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m),has.area,"Area","ada","AREA",prizeBox())+
-   gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m),has.area,"Area","asa","AREA",giftBox())+
-   `</div>`;
+   gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m),has.area,"Area","asa","AREA",giftBox())):"";
+  $("app").innerHTML=`<div class="grid">`+top10Cards+zoneCards+`</div>`;
   // "previous update -> current update" line
   let meta=null; try{ meta=JSON.parse(localStorage.getItem("rk:meta")||"null") }catch(e){}
   if(!meta) meta={cur:Date.now(),prev:null};
