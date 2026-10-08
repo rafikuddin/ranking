@@ -101,6 +101,11 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 #run .rt{font-weight:900;letter-spacing:.22em;font-size:18px}
 #run .rs{color:#9a9aae;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
 .note{margin:0 0 4px;font-size:11px;color:#9a9aae;letter-spacing:.05em;text-transform:uppercase}
+.rw.m1{background:linear-gradient(90deg,#9b7a0a 0%,#4a3a08 55%,#1c1a14 100%);outline:1px solid #ffd23f;outline-offset:-1px}
+.rw.m2{background:linear-gradient(90deg,#8d96a8 0%,#454b5a 55%,#1c1d24 100%);outline:1px solid #d5d9e0;outline-offset:-1px}
+.rw.m3{background:linear-gradient(90deg,#a8601f 0%,#4a2a11 55%,#1d1812 100%);outline:1px solid #d9893f;outline-offset:-1px}
+.md{margin-right:7px;font-size:16px;font-style:normal}
+.prize.cer{background:linear-gradient(90deg,#e10600,#8f0500);color:#fff;margin-top:-4px;font-size:12px}
 </style>
 </head>
 <body>
@@ -180,7 +185,9 @@ const CONFIG = {
   COL: { date:"Date", distributor:"Distributor", officer:"Sales Officer", category:"Category", value:"Sales Value", zone:"Zone", area:"Area", empId:"Employee ID", distCode:"Distributor Code" },
   CURRENCY: "৳",
   PRIZE_DIST: "Thailand",   // shown on the Distributor cards
-  GIFT_SO: "Sri Lanka",     // shown on the Sales Officer cards
+  GIFT_SO: "Sri Lanka",
+  GIFT_DIST5: "Sri Lanka Tour",                 // gift for the Top 5 Distributors (outside the Top 10)
+  CEREMONY: "National Award Giving Ceremony",   // Top 10 Sales Officers attend this     // shown on the Sales Officer cards
   SHOW_TOP10: true,         // the 4 "Top 10" cards
   SHOW_ZONE_AREA: true      // zone-wise (Thinner) / area-wise (Adhesive) 1st & 2nd cards - Top 10 people are NOT repeated here
 };
@@ -283,10 +290,10 @@ function inPer(r){            // TODAY / WEEK (last 7 days incl. today) / MONTH 
   const d=new Date(r.ts); return d.getFullYear()===n.getFullYear()&&d.getMonth()===n.getMonth();
 }
 
-function top10(cat,key,m){
+function top10(cat,key,m,ex,n){
   const map={};
-  for(const r of rows){ if(r.cat!==cat||!inPer(r)||!r[key]) continue; map[r[key]]=(map[r[key]]||0)+r.val }
-  return Object.entries(map).map(([k,v])=>[k,r2(v)]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,10);
+  for(const r of rows){ if(r.cat!==cat||!inPer(r)||!r[key]||(ex&&ex.has(r[key]))) continue; map[r[key]]=(map[r[key]]||0)+r.val }
+  return Object.entries(map).map(([k,v])=>[k,r2(v)]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,n||10);
 }
 function byGroup(cat,key,gk,m,ex){
   const g={};
@@ -311,7 +318,7 @@ function track(id,keys){
   try{ localStorage.setItem("rk:"+id,JSON.stringify(st)) }catch(e){}
   return {prev:st.prev,changed};
 }
-function row(cid,key,i,t){
+function row(cid,key,i,t,medal){
   const m=key.match(/^(.*) \(([^()]+)\)$/), nm=m?m[1]:key, id=m?m[2]:"";
   let ch='<span class="chg nc">–</span>', fl="";
   if(t.prev){
@@ -321,12 +328,13 @@ function row(cid,key,i,t){
       if(d>0){ ch=`<span class="chg up">▲${d}</span>`; if(t.changed) fl=" fu" }
       else if(d<0){ ch=`<span class="chg dn">▼${-d}</span>`; if(t.changed) fl=" fd" } }
   }
-  return `<div class="rw${fl}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+  const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
+  return `<div class="rw${fl}${mc}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${me}${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
-function fCard(cls,cat,sub,list,cid,bd){
+function fCard(cls,cat,sub,list,cid,bd,medal){
   cid=per+":"+cid;
   const keys=list.map(e=>e[0]), t=track(cid,keys);
-  const body=list.length?list.map((e,i)=>row(cid,e[0],i,t)).join(""):'<div class="msg">No data</div>';
+  const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">No data</div>';
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
 function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
@@ -341,16 +349,21 @@ function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
 }
 const prizeBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST)} 🇹🇭</div>`;
 const giftBox=()=>`<div class="prize gift">🎁 GIFT · ${esc(CONFIG.GIFT_SO)} 🇱🇰</div>`;
+const tourBox=()=>`<div class="prize">🎁 GIFT · ${esc(CONFIG.GIFT_DIST5)} 🇱🇰</div><div class="note">Top 10 names are not repeated here</div>`;
+const cerBox=()=>`<div class="prize cer">🎖 ATTEND · ${esc(CONFIG.CEREMONY)}</div>`;
 function render(flip){
   const m=per, old={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
   const T=(c,k)=>top10(c,k,m), keys=l=>new Set(l.map(e=>e[0]));
   const tD=T("Thinner","dist"), aD=T("Adhesive","dist"), tS=T("Thinner","so"), aS=T("Adhesive","so");
+  const t5D=top10("Thinner","dist",m,keys(tD),5), a5D=top10("Adhesive","dist",m,keys(aD),5);
   const top10Cards=CONFIG.SHOW_TOP10?(
-   fCard("t","THINNER","TOP 10 DISTRIBUTORS",tD,"td",prizeBox())+
-   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",aD,"ad",prizeBox())+
-   fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",giftBox())+
-   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",giftBox())):"";
+   fCard("t","THINNER","TOP 10 DISTRIBUTORS",tD,"td",prizeBox(),1)+
+   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",aD,"ad",prizeBox(),1)+
+   fCard("t","THINNER","TOP 5 DISTRIBUTORS",t5D,"t5d",tourBox())+
+   fCard("a","ADHESIVE","TOP 5 DISTRIBUTORS",a5D,"a5d",tourBox())+
+   fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",giftBox()+cerBox(),1)+
+   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",giftBox()+cerBox(),1)):"";
   const nz='<div class="note">1st &amp; 2nd of each zone · Top 10 not repeated</div>', na='<div class="note">1st &amp; 2nd of each area · Top 10 not repeated</div>';
   const zoneCards=CONFIG.SHOW_ZONE_AREA?(
    gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m,keys(tD)),has.zone,"Zone","tdz","ZONE",nz)+
