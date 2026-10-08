@@ -84,18 +84,20 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .brand .sub{white-space:nowrap;font-size:11px;font-weight:600;letter-spacing:.04em}
 .prize{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 8px;padding:7px 10px;border-radius:4px;background:linear-gradient(90deg,#ffd23f,#ff9f1c);color:#15151e;font-weight:900;font-style:italic;letter-spacing:.08em;font-size:13px;text-transform:uppercase}
 .prize.gift{background:linear-gradient(90deg,#27f4d2,#3b9cff)}
-#run{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:#15151e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-style:italic}
+#run{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:#15151e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-style:italic}
 #run[hidden]{display:none}
-#run .stage{position:relative;width:100%;height:120px;overflow:hidden}
-#run .rabbit{position:absolute;bottom:16px;left:0;animation:runx 2.3s linear infinite}
-@keyframes runx{from{transform:translateX(-140px)}to{transform:translateX(100vw)}}
-#run .hop{animation:hop .3s ease-in-out infinite alternate}
-@keyframes hop{from{transform:translateY(0)}to{transform:translateY(-16px)}}
-#run .ground{position:absolute;left:0;right:0;bottom:10px;height:3px;background:repeating-linear-gradient(90deg,#e10600 0 18px,transparent 18px 30px);animation:gr .45s linear infinite}
-@keyframes gr{to{background-position:-30px 0}}
-#run .lgA,#run .lgB{transform-box:fill-box;transform-origin:50% 0;animation:leg .3s ease-in-out infinite alternate}
-#run .lgB{animation-direction:alternate-reverse}
-@keyframes leg{from{transform:rotate(-38deg)}to{transform:rotate(38deg)}}
+#run .stage{position:relative;width:100%;height:96px;overflow:hidden}
+#run .car{position:absolute;bottom:14px;left:0;animation:runx 1.7s linear infinite}
+@keyframes runx{from{transform:translateX(-200px)}to{transform:translateX(100vw)}}
+#run .bob{animation:bob .12s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-1.5px)}}
+#run svg{overflow:visible;display:block}
+#run .whl{transform-box:fill-box;transform-origin:center;animation:spin .22s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#run .spd{animation:spd .25s linear infinite}
+@keyframes spd{from{opacity:.15;transform:translateX(10px)}to{opacity:.7;transform:translateX(-6px)}}
+#run .ground{position:absolute;left:0;right:0;bottom:6px;height:7px;background:repeating-linear-gradient(90deg,#e10600 0 22px,#fff 22px 44px);animation:gr .3s linear infinite}
+@keyframes gr{to{background-position:-44px 0}}
 #run .rt{font-weight:900;letter-spacing:.22em;font-size:18px}
 #run .rs{color:#9a9aae;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
 </style>
@@ -103,19 +105,19 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 <body>
 <div id="run" hidden>
   <div class="stage">
-    <div class="rabbit"><div class="hop">
-      <svg viewBox="0 0 120 80" width="112" height="75" aria-hidden="true">
-        <g class="lgB"><ellipse cx="38" cy="62" rx="6.5" ry="14" fill="#d9deea"/></g>
-        <g class="lgA"><ellipse cx="76" cy="62" rx="5.5" ry="13" fill="#d9deea"/></g>
-        <circle cx="24" cy="42" r="8" fill="#fff"/>
-        <ellipse cx="55" cy="46" rx="31" ry="17" fill="#fff"/>
-        <ellipse cx="86" cy="14" rx="4.5" ry="13" fill="#fff" transform="rotate(-12 86 14)"/>
-        <ellipse cx="86" cy="15" rx="2" ry="9" fill="#ffb3c7" transform="rotate(-12 86 14)"/>
-        <ellipse cx="96" cy="15" rx="4.5" ry="12" fill="#fff" transform="rotate(10 96 15)"/>
-        <ellipse cx="96" cy="16" rx="2" ry="8" fill="#ffb3c7" transform="rotate(10 96 15)"/>
-        <circle cx="91" cy="36" r="13" fill="#fff"/>
-        <circle cx="96" cy="34" r="2.3" fill="#222"/>
-        <circle cx="103" cy="39" r="2.5" fill="#ff7a9c"/>
+    <div class="car"><div class="bob">
+      <svg viewBox="0 0 220 70" width="170" height="54" aria-hidden="true">
+        <g class="spd" stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="-70" y1="22" x2="-18" y2="22"/><line x1="-50" y1="34" x2="-8" y2="34"/><line x1="-80" y1="46" x2="-14" y2="46"/></g>
+        <rect x="2" y="7" width="30" height="4" rx="1" fill="#aeb4c4"/>
+        <rect x="14" y="10" width="3" height="20" fill="#aeb4c4"/>
+        <path d="M14 45 L22 29 L70 25 L92 27 L112 34 L190 42 L207 44 L207 50 L28 53 Z" fill="#e10600"/>
+        <path d="M60 37 L150 41 L150 46 L58 46 Z" fill="#fff" opacity=".92"/>
+        <circle cx="101" cy="25" r="7" fill="#ffd23f"/>
+        <path d="M87 30 Q100 12 120 31" stroke="#22222c" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <rect x="186" y="51" width="32" height="4" rx="1" fill="#aeb4c4"/>
+        <rect x="212" y="45" width="4" height="10" fill="#aeb4c4"/>
+        <g class="whl"><circle cx="46" cy="52" r="14" fill="#15151e" stroke="#444" stroke-width="2"/><circle cx="46" cy="52" r="8" fill="#9aa3b5"/><line x1="46" y1="44" x2="46" y2="60" stroke="#15151e" stroke-width="3"/><line x1="38" y1="52" x2="54" y2="52" stroke="#15151e" stroke-width="3"/></g>
+        <g class="whl"><circle cx="170" cy="54" r="11" fill="#15151e" stroke="#444" stroke-width="2"/><circle cx="170" cy="54" r="6" fill="#9aa3b5"/><line x1="170" y1="48" x2="170" y2="60" stroke="#15151e" stroke-width="3"/><line x1="164" y1="54" x2="176" y2="54" stroke="#15151e" stroke-width="3"/></g>
       </svg>
     </div></div>
     <div class="ground"></div>
@@ -176,8 +178,9 @@ const CONFIG = {
   // Column header names in your sheet (case-insensitive):
   COL: { date:"Date", distributor:"Distributor", officer:"Sales Officer", category:"Category", value:"Sales Value", zone:"Zone", area:"Area", empId:"Employee ID", distCode:"Distributor Code" },
   CURRENCY: "৳",
-  PRIZE_DIST: "Thailand",   // shown on the Top 10 Distributor cards
-  GIFT_SO: "Sri Lanka"      // shown on the Top 10 Sales Officer cards
+  PRIZE_DIST: "Thailand",   // shown on the Distributor cards
+  GIFT_SO: "Sri Lanka",     // shown on the Sales Officer cards
+  SHOW_TOP10: false         // true = also show the 4 "Top 10" cards
 };
 /* ====================================== */
 
@@ -248,7 +251,7 @@ function showNow(d,flip){
 let busy=false, chg=false;
 function run(on){ $("run").hidden=!on }
 async function load(silent,anim){
-  if(busy){                                   // a refresh is already running: keep the rabbit until it finishes
+  if(busy){                                   // a refresh is already running: keep the car running until it finishes
     if(anim){ run(true); const w=setInterval(()=>{ if(!busy){ clearInterval(w); run(false) } },200) }
     return;
   }
@@ -259,7 +262,7 @@ async function load(silent,anim){
     const j=await api({action:"data",token:getToken()});
     if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
     ingest(j); showMain(); $("upb").hidden=j.role!=="admin"; saveCache(j);
-    if(anim){ const w=500-(Date.now()-t0); if(w>0) await new Promise(r=>setTimeout(r,w)); run(false) }   // rabbit shows at least half a second
+    if(anim){ const w=500-(Date.now()-t0); if(w>0) await new Promise(r=>setTimeout(r,w)); run(false) }   // car shows at least half a second
     render(!!silent);
     $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
   }catch(e){
@@ -324,7 +327,7 @@ function fCard(cls,cat,sub,list,cid,bd){
   const body=list.length?list.map((e,i)=>row(cid,e[0],i,t)).join(""):'<div class="msg">No data</div>';
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
-function gCard(cls,cat,sub,groups,ok,colName,cid,lbl){
+function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
   let body;
   if(!ok) body=`<div class="msg err">Column "${colName}" not found in sheet</div>`;
   else if(!groups.length) body='<div class="msg">No data</div>';
@@ -332,22 +335,23 @@ function gCard(cls,cat,sub,groups,ok,colName,cid,lbl){
     const id=per+":"+cid+":"+gn, t=track(id,list.map(e=>e[0]));
     return `<div class="gh">${lbl} · ${esc(gn)}</div>`+list.map((e,i)=>row(id,e[0],i,t)).join("");
   }).join("");
-  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${body}</div>`;
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
 const prizeBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST)} 🇹🇭</div>`;
 const giftBox=()=>`<div class="prize gift">🎁 GIFT · ${esc(CONFIG.GIFT_SO)} 🇱🇰</div>`;
 function render(flip){
   const m=per, old={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
-  $("app").innerHTML=`<div class="grid">`+
+  const top10Cards=CONFIG.SHOW_TOP10?(
    fCard("t","THINNER","TOP 10 DISTRIBUTORS",top10("Thinner","dist",m),"td",prizeBox())+
    fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",top10("Adhesive","dist",m),"ad",prizeBox())+
    fCard("t","THINNER","TOP 10 SALES OFFICERS",top10("Thinner","so",m),"ts",giftBox())+
-   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",top10("Adhesive","so",m),"as",giftBox())+
-   gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m),has.zone,"Zone","tdz","ZONE")+
-   gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m),has.zone,"Zone","tsz","ZONE")+
-   gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m),has.area,"Area","ada","AREA")+
-   gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m),has.area,"Area","asa","AREA")+
+   fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",top10("Adhesive","so",m),"as",giftBox())):"";
+  $("app").innerHTML=`<div class="grid">`+top10Cards+
+   gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m),has.zone,"Zone","tdz","ZONE",prizeBox())+
+   gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m),has.zone,"Zone","tsz","ZONE",giftBox())+
+   gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m),has.area,"Area","ada","AREA",prizeBox())+
+   gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m),has.area,"Area","asa","AREA",giftBox())+
    `</div>`;
   // "previous update -> current update" line
   let meta=null; try{ meta=JSON.parse(localStorage.getItem("rk:meta")||"null") }catch(e){}
