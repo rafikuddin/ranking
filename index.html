@@ -70,7 +70,9 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .stripe{flex:none;width:5px}
 .rw .nm{flex:1;min-width:0;display:flex;align-items:center;padding:0 10px;font-weight:800;font-size:14px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tag{align-self:center;flex:none;margin-right:8px;padding:2px 7px;border-radius:3px;background:#0d0d14;border:1px solid #3a3a52;font-size:11px;font-weight:800;letter-spacing:.04em;color:#cfcfe0}
-.chg{flex:none;width:52px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;background:#0d0d14}
+.chg{flex:none;width:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;font-weight:900;font-size:13px;background:#0d0d14}
+.chg b{font-size:13px;font-weight:900}
+.chg i{font-size:9px;font-style:normal;font-weight:800;opacity:.9;letter-spacing:.02em;white-space:nowrap}
 .chg.up{color:#00e676}.chg.dn{color:#ff4545}.chg.nc{color:#6b6b82}.chg.nw{color:#c77dff;font-size:11px}
 .rw.fu{animation:fu 2.2s ease-out}.rw.fd{animation:fd 2.2s ease-out}
 @keyframes fu{from{box-shadow:inset 0 0 0 40px rgba(0,230,118,.45)}to{box-shadow:inset 0 0 0 40px rgba(0,230,118,0)}}
@@ -399,19 +401,31 @@ function byGroup(cat,key,gk,m,ex){
 const TEAM=["#27f4d2","#e80020","#3671c6","#ff8000","#229971","#0093cc","#6692ff","#b6babd","#52e252","#ff87bc"];
 const hue=k=>{let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))>>>0;return TEAM[h%TEAM.length]};
 // remembers the last ranking; when the order changes, the old one becomes "previous"
-function track(id,keys){
+function track(id,keys,full){
   let st=null,changed=false;
   try{ st=JSON.parse(localStorage.getItem("rk:"+id)||"null") }catch(e){}
   const sig=keys.join("\u0001");
-  if(!st){ st={cur:keys,prev:null} }
-  else if(st.cur.join("\u0001")!==sig){ st={cur:keys,prev:st.cur.length?st.cur:null}; changed=true; chg=true }
+  if(!st||st.sig===undefined){ st={sig,cur:keys,prev:null,full:full||null,prevFull:null} }
+  else if(st.sig!==sig){
+    st={sig,cur:keys,prev:(st.cur&&st.cur.length)?st.cur:null,full:full||null,prevFull:(st.full&&st.full.length)?st.full:null};
+    changed=true; chg=true;
+  }else if(full){ st.full=full }
   try{ localStorage.setItem("rk:"+id,JSON.stringify(st)) }catch(e){}
-  return {prev:st.prev,changed};
+  return {prev:st.prev,prevFull:st.prevFull,full:full||null,changed};
 }
 function row(cid,key,i,t,medal){
   const m=key.match(/^(.*) \(([^()]+)\)$/), nm=m?m[1]:key, id=m?m[2]:"";
   let ch='<span class="chg nc">–</span>', fl="";
-  if(t.prev){
+  if(t.full){                                       // overall position now vs before (works for people entering from below the list)
+    const cur=t.full.indexOf(key)+1;
+    if(t.prevFull){
+      const pp=t.prevFull.indexOf(key)+1;
+      if(pp<=0){ ch='<span class="chg nw">NEW</span>'; if(t.changed) fl=" fu" }
+      else{ const d=pp-cur;
+        if(d>0){ ch=`<span class="chg up"><b>▲${d}</b><i>from #${pp}</i></span>`; if(t.changed) fl=" fu" }
+        else if(d<0){ ch=`<span class="chg dn"><b>▼${-d}</b><i>from #${pp}</i></span>`; if(t.changed) fl=" fd" } }
+    }
+  }else if(t.prev){
     const p=t.prev.indexOf(key);
     if(p<0){ ch='<span class="chg nw">NEW</span>'; if(t.changed) fl=" fu" }
     else{ const d=p-i;
@@ -421,9 +435,9 @@ function row(cid,key,i,t,medal){
   const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
   return `<div class="rw${fl}${mc}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${me}${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
-function fCard(cls,cat,sub,list,cid,bd,medal){
+function fCard(cls,cat,sub,list,cid,bd,medal,full){
   cid=per+":"+cid;
-  const keys=list.map(e=>e[0]), t=track(cid,keys);
+  const keys=list.map(e=>e[0]), t=track(cid,keys,full);
   const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">No data</div>';
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
@@ -438,22 +452,24 @@ function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
 const prizeBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST)} 🇹🇭</div>`;
-const tourBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST5)} 🇱🇰</div><div class="note">Top 10 names are not repeated here</div>`;
+const tourBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST5)} 🇱🇰</div><div class="note">Top 10 not repeated · "from" = overall position before</div>`;
 const cerBox=()=>`<div class="prize cer">🎖 ATTEND · ${esc(CONFIG.CEREMONY)}</div>`;
 function render(flip,intro){
   const m=per, old={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
   const T=(c,k)=>top10(c,k,m), keys=l=>new Set(l.map(e=>e[0]));
   const tD=T("Thinner","dist"), aD=T("Adhesive","dist"), tS=T("Thinner","so"), aS=T("Adhesive","so");
+  const FT=top10("Thinner","dist",m,null,99999).map(e=>e[0]), FA=top10("Adhesive","dist",m,null,99999).map(e=>e[0]);
+  const FTS=CONFIG.SHOW_SALES_OFFICERS?top10("Thinner","so",m,null,99999).map(e=>e[0]):null, FAS=CONFIG.SHOW_SALES_OFFICERS?top10("Adhesive","so",m,null,99999).map(e=>e[0]):null;
   const t5D=top10("Thinner","dist",m,keys(tD),5), a5D=top10("Adhesive","dist",m,keys(aD),5);
   const top10Cards=CONFIG.SHOW_TOP10?(
-   fCard("t","THINNER","TOP 10 DISTRIBUTORS",tD,"td",prizeBox(),1)+
-   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",aD,"ad",prizeBox(),1)+
-   fCard("t","THINNER","TOP 5 DISTRIBUTORS",t5D,"t5d",tourBox())+
-   fCard("a","ADHESIVE","TOP 5 DISTRIBUTORS",a5D,"a5d",tourBox())+
+   fCard("t","THINNER","TOP 10 DISTRIBUTORS",tD,"td",prizeBox(),1,FT)+
+   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",aD,"ad",prizeBox(),1,FA)+
+   fCard("t","THINNER","TOP 5 DISTRIBUTORS",t5D,"t5d",tourBox(),0,FT)+
+   fCard("a","ADHESIVE","TOP 5 DISTRIBUTORS",a5D,"a5d",tourBox(),0,FA)+
    (CONFIG.SHOW_SALES_OFFICERS?(
-    fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",cerBox(),1)+
-    fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",cerBox(),1)):"")):"";
+    fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",cerBox(),1,FTS)+
+    fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",cerBox(),1,FAS)):"")):"";
   const nz='<div class="note">1st &amp; 2nd of each zone · Top 10 not repeated</div>', na='<div class="note">1st &amp; 2nd of each area · Top 10 not repeated</div>';
   const zoneCards=CONFIG.SHOW_ZONE_AREA?(
    gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m,keys(tD)),has.zone,"Zone","tdz","ZONE",nz)+
@@ -476,12 +492,26 @@ function render(flip,intro){
       if(!e.animate) return;
       const up=e.classList.contains("fu"), down=e.classList.contains("fd");
       const o=old[e.dataset.k], dy=o==null?0:o-e.getBoundingClientRect().top;
-      if(up||down){                                   // the distributor NAME flips UP (gained places) or DOWN (lost places)
-        e.querySelectorAll(".nm,.tag").forEach(el=>{
+      if(up||down){                                   // parrot-style SOMERSAULT: backflip = moved UP, forward flip = moved DOWN
+        const dir=up?-1:1, pos=e.querySelector(".pos"), dl=Math.min(i*60,700);
+        e.style.overflow="visible";
+        if(pos){
+          pos.style.position="relative"; pos.style.zIndex=5;
+          const an=pos.animate([
+            {transform:"translateY(0) rotate(0deg) scale(1,1)",offset:0},
+            {transform:"translateY(3px) rotate(0deg) scale(1.16,.74)",offset:.14},                       // crouch
+            {transform:`translateY(-18px) rotate(${dir*130}deg) scale(.94,1.12)`,offset:.38},          // launch
+            {transform:`translateY(-24px) rotate(${dir*250}deg) scale(1,1)`,offset:.6},                // top of the flip
+            {transform:`translateY(2px) rotate(${dir*360}deg) scale(1.13,.8)`,offset:.86},             // landing
+            {transform:`translateY(0) rotate(${dir*360}deg) scale(1,1)`,offset:1}],
+            {duration:1100,delay:dl,easing:"ease-in-out",fill:"backwards"});
+          an.onfinish=()=>{ e.style.overflow="" };
+        }else e.style.overflow="";
+        e.querySelectorAll(".nm,.tag").forEach(el=>{      // the name flips in behind it
           el.style.transformOrigin=up?"50% 100%":"50% 0%";
           el.animate([{transform:`perspective(420px) rotateX(${up?-95:95}deg) translateY(${up?16:-16}px)`,opacity:0},
                       {transform:"perspective(420px) rotateX(0deg) translateY(0)",opacity:1}],
-                     {duration:800,delay:Math.min(i*50,700),easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"});
+                     {duration:800,delay:dl+250,easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"});
         });
         i++;
       }else if(intro){                                // screen opens / manual refresh: rows flip down into place
