@@ -1,0 +1,79 @@
+name: Build APK
+
+# STEP 2 of 2 - builds the signed Khela Hobe APK and publishes it on the Releases page.
+# It starts by itself after "Apply Update", when you upload android files or index.html directly,
+# or when you press:  Actions -> Build APK -> Run workflow.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'android/**'
+      - 'index.html'
+
+permissions:
+  contents: write      # publish the APK on the Releases page
+
+concurrency:
+  group: khela-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      # EASY UPDATE: an index.html in the root folder of the repo is used as the dashboard.
+      - name: Use the newest dashboard (index.html in the root folder)
+        run: |
+          if [ -f index.html ]; then
+            cp index.html android/app/src/main/assets/index.html
+            sed -i '/<link rel="manifest"/d; /serviceWorker/d' android/app/src/main/assets/index.html
+            echo "Using index.html from the root folder"
+          else
+            echo "No root index.html - using the one inside the android folder"
+          fi
+
+      # The signing key keeps every APK installable as an update. If the file was not uploaded,
+      # make a temporary one so the build still succeeds (then please upload android/app/khela.keystore).
+      - name: Make sure a signing key exists
+        run: |
+          if [ ! -f android/app/khela.keystore ]; then
+            echo "::warning::android/app/khela.keystore is missing - using a temporary key. Upload that file so updates install over the old app."
+            keytool -genkeypair -keystore android/app/khela.keystore -alias khela -keyalg RSA -keysize 2048 -validity 36500 \
+              -storepass khelahobe123 -keypass khelahobe123 -dname "CN=Khela Hobe, O=Samuda Spec Chem Ltd, C=BD"
+          fi
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build the signed APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace -Pvc=${{ github.run_number }}
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk KhelaHobe.apk
+
+      - name: Keep a copy in the run (Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: KhelaHobe-apk
+          path: KhelaHobe.apk
+
+      - name: Publish on the Releases page
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Khela Hobe - update ${{ github.run_number }}
+          body: "Open this page on your phone, tap KhelaHobe.apk and install. It updates the app you already have."
+          files: KhelaHobe.apk
+          make_latest: true
