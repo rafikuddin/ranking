@@ -142,6 +142,10 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .rw.fd .chg{animation:arrD .55s ease-in-out 4}
 @keyframes arrU{50%{transform:translateY(-6px) scale(1.25)}}
 @keyframes arrD{50%{transform:translateY(6px) scale(1.25)}}
+.tri{flex:none;margin-right:7px;font-size:12px;line-height:1;animation:triFade 7s forwards}
+.tri.u{color:#00e676}.tri.d{color:#ff4545}
+@keyframes triFade{0%,70%{opacity:1}100%{opacity:0}}
+.rw.fu,.rw.fd{animation:none!important}
 </style>
 </head>
 <body>
@@ -432,8 +436,9 @@ function row(cid,key,i,t,medal){
       if(d>0){ ch=`<span class="chg up">▲${d}</span>`; if(t.changed) fl=" fu" }
       else if(d<0){ ch=`<span class="chg dn">▼${-d}</span>`; if(t.changed) fl=" fd" } }
   }
+  const tri=fl?`<span class="tri ${fl.indexOf("fu")>=0?"u":"d"}">${fl.indexOf("fu")>=0?"▲":"▼"}</span>`:"";
   const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
-  return `<div class="rw${fl}${mc}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${me}${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+  return `<div class="rw${fl}${mc}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
 function fCard(cls,cat,sub,list,cid,bd,medal,full){
   cid=per+":"+cid;
@@ -487,33 +492,17 @@ function render(flip,intro){
   // ---- flip animations ----
   const calm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(!calm&&document.querySelectorAll("[data-k]").length){
-    let i=0;
+    let i=0; const haveOld=Object.keys(old).length>0;
     document.querySelectorAll("[data-k]").forEach(e=>{
       if(!e.animate) return;
       const up=e.classList.contains("fu"), down=e.classList.contains("fd");
       const o=old[e.dataset.k], dy=o==null?0:o-e.getBoundingClientRect().top;
-      if(up||down){                                   // parrot-style SOMERSAULT: backflip = moved UP, forward flip = moved DOWN
-        const dir=up?-1:1, pos=e.querySelector(".pos"), dl=Math.min(i*60,700);
-        e.style.overflow="visible";
-        if(pos){
-          pos.style.position="relative"; pos.style.zIndex=5;
-          const an=pos.animate([
-            {transform:"translateY(0) rotate(0deg) scale(1,1)",offset:0},
-            {transform:"translateY(3px) rotate(0deg) scale(1.16,.74)",offset:.14},                       // crouch
-            {transform:`translateY(-18px) rotate(${dir*130}deg) scale(.94,1.12)`,offset:.38},          // launch
-            {transform:`translateY(-24px) rotate(${dir*250}deg) scale(1,1)`,offset:.6},                // top of the flip
-            {transform:`translateY(2px) rotate(${dir*360}deg) scale(1.13,.8)`,offset:.86},             // landing
-            {transform:`translateY(0) rotate(${dir*360}deg) scale(1,1)`,offset:1}],
-            {duration:1100,delay:dl,easing:"ease-in-out",fill:"backwards"});
-          an.onfinish=()=>{ e.style.overflow="" };
-        }else e.style.overflow="";
-        e.querySelectorAll(".nm,.tag").forEach(el=>{      // the name flips in behind it
-          el.style.transformOrigin=up?"50% 100%":"50% 0%";
-          el.animate([{transform:`perspective(420px) rotateX(${up?-95:95}deg) translateY(${up?16:-16}px)`,opacity:0},
-                      {transform:"perspective(420px) rotateX(0deg) translateY(0)",opacity:1}],
-                     {duration:800,delay:dl+250,easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"});
-        });
-        i++;
+      if((up||down)&&haveOld){                        // OVERTAKE: the rows slide past each other into their new places
+        const fresh=(o==null);                          // entered the list from below -> slides up from underneath
+        e.style.position="relative"; e.style.zIndex=up?4:2;
+        const an=e.animate([{transform:`translateY(${fresh?46:dy}px)`,opacity:fresh?0:1},{transform:"translateY(0)",opacity:1}],
+                           {duration:1400,easing:"cubic-bezier(.45,0,.2,1)"});
+        an.onfinish=()=>{ e.style.position=""; e.style.zIndex="" };
       }else if(intro){                                // screen opens / manual refresh: rows flip down into place
         e.style.transformOrigin="50% 0%";
         e.animate([{transform:"perspective(520px) rotateX(-90deg)",opacity:0},{transform:"perspective(520px) rotateX(0deg)",opacity:1}],
