@@ -1,0 +1,64 @@
+name: Apply Update
+
+# STEP 1 of 2 - runs by itself when you upload  update.zip  to the main (root) folder of the repository.
+# It unzips update.zip, puts the files in the right place, saves them in the repo,
+# deletes update.zip, and then starts the "Build APK" workflow automatically.
+#
+# Folders inside update.zip must match the repository, for example:
+#   index.html                                        -> the dashboard (most common update)
+#   android/app/src/main/java/.../MainActivity.java   -> a change to the Android app itself
+# (Workflow files, Code.gs and signing keys inside the zip are ignored for safety.)
+on:
+  push:
+    paths:
+      - 'update.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write      # save the applied files in the repo
+  actions: write       # start the Build APK workflow
+
+concurrency:
+  group: khela-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Unzip and apply update.zip
+        id: apply
+        run: |
+          if [ -f update.zip ]; then
+            rm -rf /tmp/upd && mkdir -p /tmp/upd
+            unzip -o -q update.zip -d /tmp/upd
+            rm -rf /tmp/upd/__MACOSX
+            find /tmp/upd -name '.DS_Store' -delete
+            src=/tmp/upd
+            only=$(ls -A "$src")
+            if [ "$(ls -A "$src" | wc -l)" = "1" ] && [ -d "$src/$only" ]; then src="$src/$only"; fi
+            echo "Files in update.zip:"; (cd "$src" && find . -type f | sort)
+            (cd "$src" && tar cf - --exclude='.github' --exclude='.git' --exclude='Code.gs' --exclude='*.keystore' .) | tar xf - -C .
+            rm -f update.zip
+            echo "applied=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No update.zip found - nothing to apply"
+          fi
+
+      - name: Save the update in the repository
+        if: steps.apply.outputs.applied == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Apply update.zip (run ${{ github.run_number }})" || echo "Nothing to commit"
+          git push
+
+      - name: Start Build APK
+        if: steps.apply.outputs.applied == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-apk.yml --ref "${{ github.ref_name }}"
