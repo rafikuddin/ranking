@@ -1,0 +1,42 @@
+plugins { id 'com.android.application' }
+
+// The build number comes from GitHub (-Pvc=<run number>) so every new APK installs over the old one.
+def vc = (project.findProperty('vc') ?: '1').toString().toInteger()
+
+android {
+    namespace 'com.salesdashboard.app'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.salesdashboard.app'
+        minSdk 24
+        targetSdk 34
+        versionCode vc
+        versionName "1.${vc}".toString()
+    }
+    // Same signing key for every build = Android accepts the APK as an UPDATE (no uninstall needed).
+    signingConfigs {
+        release {
+            storeFile file('khela.keystore')
+            storePassword 'khelahobe123'
+            keyAlias 'khela'
+            keyPassword 'khelahobe123'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
