@@ -104,15 +104,25 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 #run .rx{animation:rx var(--d) linear infinite;animation-delay:var(--dl)}
 #run .ry{animation:climb var(--d) linear infinite;animation-delay:var(--dl)}
 @keyframes rx{from{transform:translateX(0)}to{transform:translateX(290px)}}
-#run .hp{animation:hop .18s ease-in-out infinite alternate}
-@keyframes hop{from{transform:translateY(0)}to{transform:translateY(-3px)}}
-#run .th{transform-origin:50px 58px;animation:th .34s ease-in-out infinite alternate}
-#run .sh{transform-origin:50px 76px;animation:sh .34s ease-in-out infinite alternate}
-#run .ar{transform-origin:62px 32px;animation:ar .34s ease-in-out infinite alternate}
-#run .rev{animation-direction:alternate-reverse}
-@keyframes th{from{transform:rotate(-45deg)}to{transform:rotate(45deg)}}
-@keyframes sh{from{transform:rotate(8deg)}to{transform:rotate(85deg)}}
-@keyframes ar{from{transform:rotate(-80deg)}to{transform:rotate(35deg)}}
+#run .ry{position:relative}
+#run .shd{position:absolute;left:3px;bottom:-1px;width:28px;height:6px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,0) 70%);animation:shd var(--d) linear infinite;animation-delay:var(--dl)}
+@keyframes shd{0%,91%{opacity:1}93%,100%{opacity:0}}
+#run .th,#run .sh,#run .ft,#run .ua,#run .fo{animation-duration:var(--T);animation-iteration-count:infinite;animation-timing-function:ease-in-out}
+#run .th{transform-origin:50px 58px;animation-name:kth}
+#run .sh{transform-origin:50px 76px;animation-name:ksh}
+#run .ft{transform-origin:50px 92px;animation-name:kft}
+#run .ua{transform-origin:62px 32px;animation-name:kua}
+#run .fo{transform-origin:62px 46px;animation-name:kfo}
+#run .nr{animation-delay:calc(var(--T) * var(--o) * -1)}
+#run .fr{animation-delay:calc(var(--T) * (var(--o) + .5) * -1)}
+#run .bd{animation:kbd var(--T) ease-in-out infinite;animation-delay:calc(var(--T) * var(--o) * -1)}
+/* one full running stride: foot strike -> mid stance -> toe-off -> heel kick -> knee drive */
+@keyframes kth{0%{transform:rotate(-35deg)}15%{transform:rotate(-5deg)}30%{transform:rotate(25deg)}45%{transform:rotate(15deg)}60%{transform:rotate(-20deg)}80%{transform:rotate(-52deg)}100%{transform:rotate(-35deg)}}
+@keyframes ksh{0%{transform:rotate(15deg)}15%{transform:rotate(28deg)}30%{transform:rotate(22deg)}45%{transform:rotate(100deg)}60%{transform:rotate(108deg)}80%{transform:rotate(55deg)}100%{transform:rotate(15deg)}}
+@keyframes kft{0%{transform:rotate(-15deg)}15%{transform:rotate(0deg)}30%{transform:rotate(35deg)}45%{transform:rotate(38deg)}60%{transform:rotate(15deg)}80%{transform:rotate(-12deg)}100%{transform:rotate(-15deg)}}
+@keyframes kua{0%{transform:rotate(38deg)}25%{transform:rotate(-5deg)}50%{transform:rotate(-62deg)}75%{transform:rotate(-8deg)}100%{transform:rotate(38deg)}}
+@keyframes kfo{0%{transform:rotate(-82deg)}25%{transform:rotate(-92deg)}50%{transform:rotate(-104deg)}75%{transform:rotate(-92deg)}100%{transform:rotate(-82deg)}}
+@keyframes kbd{0%{transform:translateY(0)}15%{transform:translateY(1.6px)}30%{transform:translateY(-2.6px)}50%{transform:translateY(0)}65%{transform:translateY(1.6px)}80%{transform:translateY(-2.6px)}100%{transform:translateY(0)}}
 #run .tro{animation:trob .5s ease-in-out infinite alternate}
 @keyframes trob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
 #run .sp{animation:sp .35s linear infinite alternate}
@@ -313,15 +323,25 @@ function scheduleRetry(){ if(retryN>=4) return; clearTimeout(retryT); retryN++; 
     kf+=`${((f-0.02)*100).toFixed(2)}%{transform:translateY(${-SH*(k-1)}px)}${((f+0.012)*100).toFixed(2)}%{transform:translateY(${-SH*k}px)}`; }
   kf+=`93%{transform:translateY(${-SH*N}px);opacity:1}97%{transform:translateY(${-SH*N-22}px);opacity:1}100%{transform:translateY(${-SH*N-22}px);opacity:0}}`;
   const st=document.createElement("style"); st.textContent=kf; document.head.appendChild(st);
-  const leg=(c)=>`<g class="th${c}"><line x1="50" y1="58" x2="50" y2="76" stroke="#d9dce6" stroke-width="9" stroke-linecap="round"/><g class="sh${c}"><line x1="50" y1="76" x2="50" y2="92" stroke="SKIN" stroke-width="7" stroke-linecap="round"/><ellipse cx="55" cy="95" rx="7" ry="3.2" fill="#fff"/></g></g>`;
-  const arm=(c)=>`<g class="ar${c}"><path d="M62 32L60 46L73 49" fill="none" stroke="SKIN" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>`;
-  const man=(shirt,skin,hair)=>(`<svg viewBox="34 2 52 98" width="${RW}" height="64">`+leg(" rev")+arm(" rev")+
-    `<path d="M62 30L50 58" stroke="${shirt}" stroke-width="14" stroke-linecap="round"/><rect x="42" y="54" width="16" height="9" rx="3" fill="#15151e" stroke="#555"/>`+
-    leg("")+`<circle cx="68" cy="17" r="9.5" fill="SKIN"/><path d="M58 15a10 10 0 0 1 19-4c-4-3-12-3-19 4z" fill="${hair}"/><circle cx="72" cy="16" r="1.5" fill="#222"/>`+arm("")+`</svg>`).replace(/SKIN/g,skin);
-  // six competitors with different speeds, so they overtake each other on the stairs
-  const crew=[["#e10600","#f1c27d","#2b1d12",3.4,0,0],["#3b82f6","#d9a066","#111",3.0,-1.2,2],["#22c55e","#f1c27d","#6b3f1d",3.8,-2.1,4],
-              ["#ff8000","#c68642","#222",3.2,-0.6,1],["#a855f7","#f1c27d","#111",3.6,-2.9,3],["#27f4d2","#e0ac69","#3b2314",2.9,-1.8,5]];
-  $("rstage").innerHTML=stairs+crew.map(c=>`<div class="rn" style="bottom:${10+c[5]}px;z-index:${10-c[5]}"><div class="rx" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="ry" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="hp">${man(c[0],c[1],c[2])}</div></div></div></div>`).join("");
+  const dk=(h,f)=>"#"+[1,3,5].map(i=>Math.round(parseInt(h.substr(i,2),16)*f).toString(16).padStart(2,"0")).join("");
+  // a limb is a jointed chain: thigh > shin > foot, shoulder > elbow > hand (each joint swings on its own timing)
+  const leg=(cls,skin,shorts)=>`<g class="th ${cls}"><line x1="50" y1="58" x2="50" y2="68" stroke="${shorts}" stroke-width="11" stroke-linecap="round"/><line x1="50" y1="66" x2="50" y2="76" stroke="${skin}" stroke-width="8" stroke-linecap="round"/>
+    <g class="sh ${cls}"><line x1="50" y1="76" x2="50" y2="92" stroke="${skin}" stroke-width="6.5" stroke-linecap="round"/><line x1="50" y1="86" x2="50" y2="91" stroke="#fff" stroke-width="7" stroke-linecap="butt"/>
+      <g class="ft ${cls}"><path d="M46 90h11q6 2 6 6H46z" fill="#fff" stroke="#9aa3b5" stroke-width=".8"/><rect x="46" y="95" width="17" height="1.6" fill="#e10600"/></g></g></g>`;
+  const arm=(cls,skin,shirt)=>`<g class="ua ${cls}"><line x1="62" y1="32" x2="62" y2="46" stroke="${shirt}" stroke-width="6" stroke-linecap="round"/>
+    <g class="fo ${cls}"><line x1="62" y1="46" x2="62" y2="58" stroke="${skin}" stroke-width="5" stroke-linecap="round"/><circle cx="62" cy="60" r="3" fill="${skin}"/></g></g>`;
+  const man=(shirt,skin,hair)=>{ const sf=dk(skin,.8), sh=dk(shirt,.78);
+    return `<svg viewBox="34 2 52 98" width="${RW}" height="64">`+
+      arm("fr",sf,sh)+leg("fr",sf,"#12121a")+
+      `<path d="M62 30L50 58" stroke="${shirt}" stroke-width="14" stroke-linecap="round"/><path d="M59 38l-4 9" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".85"/>
+       <rect x="42" y="54" width="16" height="9" rx="3" fill="#1b1b26"/>`+
+      leg("nr",skin,"#1b1b26")+
+      `<circle cx="68" cy="17" r="9.5" fill="${skin}"/><path d="M58 16a10 10 0 0 1 19-5c-5-3-13-2-19 5z" fill="${hair}"/><path d="M59 14a10 10 0 0 1 18-2" stroke="${shirt}" stroke-width="2.6" fill="none"/><circle cx="65" cy="19" r="2" fill="${dk(skin,.85)}"/><circle cx="72.5" cy="16.5" r="1.5" fill="#222"/><path d="M73 22q2 1 4 0" stroke="#7a4a2a" stroke-width="1" fill="none" stroke-linecap="round"/>`+
+      arm("nr",skin,shirt)+`</svg>`; };
+  // six competitors: [shirt, skin, hair, climb seconds, start offset, lane, stride seconds, stride phase]
+  const crew=[["#e10600","#f1c27d","#2b1d12",3.4,0,0,.56,0],["#3b82f6","#d9a066","#111111",3.0,-1.2,2,.52,.35],["#22c55e","#f1c27d","#6b3f1d",3.8,-2.1,4,.6,.7],
+              ["#ff8000","#c68642","#222222",3.2,-0.6,1,.54,.15],["#a855f7","#f1c27d","#111111",3.6,-2.9,3,.58,.55],["#27f4d2","#e0ac69","#3b2314",2.9,-1.8,5,.5,.85]];
+  $("rstage").innerHTML=stairs+crew.map(c=>`<div class="rn" style="bottom:${10+c[5]}px;z-index:${10-c[5]}"><div class="rx" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="ry" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="shd"></div><div class="bd" style="--T:${c[6]}s;--o:${c[7]}">${man(c[0],c[1],c[2])}</div></div></div></div>`).join("");
 })();
 function run(on){ $("run").hidden=!on }
 async function load(silent,anim){
@@ -393,7 +413,7 @@ function row(cid,key,i,t,medal){
   let ch='<span class="chg nc">–</span>', fl="";
   if(t.prev){
     const p=t.prev.indexOf(key);
-    if(p<0) ch='<span class="chg nw">NEW</span>';
+    if(p<0){ ch='<span class="chg nw">NEW</span>'; if(t.changed) fl=" fu" }
     else{ const d=p-i;
       if(d>0){ ch=`<span class="chg up">▲${d}</span>`; if(t.changed) fl=" fu" }
       else if(d<0){ ch=`<span class="chg dn">▼${-d}</span>`; if(t.changed) fl=" fd" } }
@@ -456,11 +476,14 @@ function render(flip,intro){
       if(!e.animate) return;
       const up=e.classList.contains("fu"), down=e.classList.contains("fd");
       const o=old[e.dataset.k], dy=o==null?0:o-e.getBoundingClientRect().top;
-      if(up||down){                                   // moved: flips UP (gained places) or DOWN (lost places)
-        e.style.transformOrigin=up?"50% 100%":"50% 0%";
-        e.animate([{transform:`translateY(${dy}px) perspective(520px) rotateX(${up?-88:88}deg)`,opacity:.15},
-                   {transform:"translateY(0) perspective(520px) rotateX(0deg)",opacity:1}],
-                  {duration:1000,easing:"cubic-bezier(.2,.8,.2,1)"});
+      if(up||down){                                   // the distributor NAME flips UP (gained places) or DOWN (lost places)
+        e.querySelectorAll(".nm,.tag").forEach(el=>{
+          el.style.transformOrigin=up?"50% 100%":"50% 0%";
+          el.animate([{transform:`perspective(420px) rotateX(${up?-95:95}deg) translateY(${up?16:-16}px)`,opacity:0},
+                      {transform:"perspective(420px) rotateX(0deg) translateY(0)",opacity:1}],
+                     {duration:800,delay:Math.min(i*50,700),easing:"cubic-bezier(.2,.9,.25,1)",fill:"backwards"});
+        });
+        i++;
       }else if(intro){                                // screen opens / manual refresh: rows flip down into place
         e.style.transformOrigin="50% 0%";
         e.animate([{transform:"perspective(520px) rotateX(-90deg)",opacity:0},{transform:"perspective(520px) rotateX(0deg)",opacity:1}],
