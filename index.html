@@ -192,7 +192,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
       <input type="text" id="au_name" placeholder="Full name" autocomplete="off">
       <input type="text" id="au_user" placeholder="Username (e.g. rahim01)" autocapitalize="none" autocomplete="off" required>
       <input type="password" id="au_pass" placeholder="Password (min 6 characters)" autocomplete="new-password" required>
-      <select id="au_role"><option value="viewer">Viewer - dashboard only</option><option value="admin">Admin - can upload data and add users</option></select>
+      <select id="au_role"><option value="viewer">Viewer - Thinner &amp; Adhesive dashboards</option><option value="viewer_thinner">Viewer - Thinner dashboard only</option><option value="viewer_adhesive">Viewer - Adhesive dashboard only</option><option value="admin">Admin - upload data &amp; add users</option></select>
       <div id="aumsg" class="msg" style="text-align:left;padding:6px 0"></div>
       <div class="hb" style="margin-top:8px"><button id="augo" type="submit">Add user</button><button id="auback" type="button">Back</button></div>
     </form>
@@ -441,12 +441,14 @@ function row(cid,key,i,t,medal){
   return `<div class="rw${fl}${mc}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
 function fCard(cls,cat,sub,list,cid,bd,medal,full){
+  if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
   cid=per+":"+cid;
   const keys=list.map(e=>e[0]), t=track(cid,keys,full);
   const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">No data</div>';
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
 function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
+  if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
   let body;
   if(!ok) body=`<div class="msg err">Column "${colName}" not found in sheet</div>`;
   else if(!groups.length) body='<div class="msg">No data</div>';
@@ -489,20 +491,56 @@ function render(flip,intro){
   try{ localStorage.setItem("rk:meta",JSON.stringify(meta)) }catch(e){}
   const fm=t=>new Date(t).toLocaleString([], {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
   $("cmp").innerHTML=meta.prev?`Previous update <b>${fm(meta.prev)}</b> → Current update <b>${fm(meta.cur)}</b>`:`Current update <b>${fm(meta.cur)}</b>`;
+  // ---- rank changes: one place at a time ----
+  const stepDone=new Set();
+  function stepAnimate(){
+    const cards={};
+    document.querySelectorAll("[data-k]").forEach(e=>{ const k=e.dataset.k, c=k.slice(0,k.indexOf("|")); (cards[c]=cards[c]||[]).push(e) });
+    Object.keys(cards).forEach(c=>{
+      const rowsC=cards[c], newKeys=rowsC.map(e=>e.dataset.k);
+      const oldKeys=Object.keys(old).filter(k=>k.slice(0,k.indexOf("|"))===c).sort((a,b)=>old[a]-old[b]);
+      if(!oldKeys.length) return;
+      const entr=newKeys.filter(k=>oldKeys.indexOf(k)<0);
+      const ghosts=oldKeys.filter(k=>newKeys.indexOf(k)<0);                      // dropped out of the list: invisible, still occupy their old slot
+      const cur=oldKeys.concat(entr);                                            // where everybody stands before the update
+      const goal=newKeys.concat(ghosts);
+      const states=[cur.slice()];
+      for(let i=0;i<goal.length;i++){                                          // insertion sort = one overtake per step
+        let j=cur.indexOf(goal[i]);
+        while(j>i){ const t=cur[j-1]; cur[j-1]=cur[j]; cur[j]=t; states.push(cur.slice()); j--; }
+      }
+      const S=states.length-1;
+      rowsC.forEach(e=>{ if(entr.indexOf(e.dataset.k)>=0&&e.animate){ stepDone.add(e); e.animate([{opacity:0},{opacity:1}],{duration:500,easing:"ease-out"}) } });
+      if(S<=0) return;
+      const D=Math.max(90,Math.min(420,3200/S)), total=S*D;
+      const slot=rowsC.length>1?rowsC[1].getBoundingClientRect().top-rowsC[0].getBoundingClientRect().top:41;
+      const pos=states.map(st=>{ const m={}; st.forEach((k,i)=>{ m[k]=i }); return m });
+      rowsC.forEach((e,newI)=>{
+        const k=e.dataset.k, vals=pos.map(m=>(m[k]-newI)*slot);
+        if(vals.every(v=>v===0)||!e.animate) return;
+        const kf=[];
+        for(let s2=0;s2<=S;s2++){
+          kf.push({offset:s2/S,transform:`translateY(${vals[s2]}px)`,easing:"ease-in-out"});
+          if(s2<S&&vals[s2+1]!==vals[s2]) kf.push({offset:(s2+0.72)/S,transform:`translateY(${vals[s2+1]}px)`});
+        }
+        stepDone.add(e);
+        e.style.position="relative"; e.style.zIndex=vals[0]>0?4:2;               // the climber passes over the others
+        const an=e.animate(kf,{duration:total,fill:"backwards"});
+        an.onfinish=()=>{ e.style.position=""; e.style.zIndex="" };
+      });
+    });
+  }
   // ---- flip animations ----
   const calm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(!calm&&document.querySelectorAll("[data-k]").length){
     let i=0; const haveOld=Object.keys(old).length>0;
+    if(haveOld) stepAnimate();
     document.querySelectorAll("[data-k]").forEach(e=>{
       if(!e.animate) return;
       const up=e.classList.contains("fu"), down=e.classList.contains("fd");
       const o=old[e.dataset.k], dy=o==null?0:o-e.getBoundingClientRect().top;
-      if((up||down)&&haveOld){                        // OVERTAKE: the rows slide past each other into their new places
-        const fresh=(o==null);                          // entered the list from below -> slides up from underneath
-        e.style.position="relative"; e.style.zIndex=up?4:2;
-        const an=e.animate([{transform:`translateY(${fresh?46:dy}px)`,opacity:fresh?0:1},{transform:"translateY(0)",opacity:1}],
-                           {duration:1400,easing:"cubic-bezier(.45,0,.2,1)"});
-        an.onfinish=()=>{ e.style.position=""; e.style.zIndex="" };
+      if(stepDone.has(e)){
+        /* animated step by step above */
       }else if(intro){                                // screen opens / manual refresh: rows flip down into place
         e.style.transformOrigin="50% 0%";
         e.animate([{transform:"perspective(520px) rotateX(-90deg)",opacity:0},{transform:"perspective(520px) rotateX(0deg)",opacity:1}],
@@ -528,7 +566,8 @@ async function api(body){
 const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
 const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk");try{localStorage.removeItem("rk:data")}catch(e){}};
 function showLogin(msg){ $("main").hidden=true; $("login").hidden=false; $("lerr").textContent=msg||""; $("lp").value="" }
-function setRole(r){ $("upb").hidden=r!=="admin"; $("aub").hidden=r!=="admin" }
+let userRole="viewer";
+function setRole(r){ userRole=r||"viewer"; $("upb").hidden=r!=="admin"; $("aub").hidden=r!=="admin" }
 function openPanel(id){ ["dash","uppanel","pwpanel","aupanel"].forEach(x=>$(x).hidden=x!==id); $("menu").hidden=true }
 function showMain(){ $("login").hidden=true; $("main").hidden=false; openPanel("dash") }
 $("lf").onsubmit=async e=>{
