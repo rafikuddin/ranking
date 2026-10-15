@@ -8,6 +8,9 @@ on:
   push:
     paths:
       - 'android/**'
+      - 'app/**'
+      - '*.gradle'
+      - 'gradle.properties'
       - 'index.html'
 
 permissions:
@@ -24,24 +27,42 @@ jobs:
       - name: Get the code
         uses: actions/checkout@v4
 
+      # Works whether the Android project is inside an "android" folder or directly in the main folder.
+      - name: Find the Android project folder
+        id: proj
+        run: |
+          if [ -f android/settings.gradle ]; then
+            echo "dir=android" >> "$GITHUB_OUTPUT"
+          elif [ -f settings.gradle ]; then
+            echo "dir=." >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Cannot find settings.gradle. Upload the Android project files (app folder, build.gradle, settings.gradle, gradle.properties) to the repository."
+            ls -la
+            exit 1
+          fi
+
       # EASY UPDATE: an index.html in the root folder of the repo is used as the dashboard.
       - name: Use the newest dashboard (index.html in the root folder)
+        env:
+          DIR: ${{ steps.proj.outputs.dir }}
         run: |
           if [ -f index.html ]; then
-            cp index.html android/app/src/main/assets/index.html
-            sed -i '/<link rel="manifest"/d; /serviceWorker/d' android/app/src/main/assets/index.html
+            cp index.html "$DIR/app/src/main/assets/index.html"
+            sed -i '/<link rel="manifest"/d; /serviceWorker/d' "$DIR/app/src/main/assets/index.html"
             echo "Using index.html from the root folder"
           else
-            echo "No root index.html - using the one inside the android folder"
+            echo "No root index.html - using the one inside the app folder"
           fi
 
       # The signing key keeps every APK installable as an update. If the file was not uploaded,
-      # make a temporary one so the build still succeeds (then please upload android/app/khela.keystore).
+      # make a temporary one so the build still succeeds (then please upload app/khela.keystore).
       - name: Make sure a signing key exists
+        env:
+          DIR: ${{ steps.proj.outputs.dir }}
         run: |
-          if [ ! -f android/app/khela.keystore ]; then
-            echo "::warning::android/app/khela.keystore is missing - using a temporary key. Upload that file so updates install over the old app."
-            keytool -genkeypair -keystore android/app/khela.keystore -alias khela -keyalg RSA -keysize 2048 -validity 36500 \
+          if [ ! -f "$DIR/app/khela.keystore" ]; then
+            echo "::warning::app/khela.keystore is missing - using a temporary key. Upload that file so updates install over the old app."
+            keytool -genkeypair -keystore "$DIR/app/khela.keystore" -alias khela -keyalg RSA -keysize 2048 -validity 36500 \
               -storepass khelahobe123 -keypass khelahobe123 -dname "CN=Khela Hobe, O=Samuda Spec Chem Ltd, C=BD"
           fi
 
@@ -57,11 +78,13 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build the signed APK
-        working-directory: android
+        working-directory: ${{ steps.proj.outputs.dir }}
         run: gradle assembleRelease --no-daemon --stacktrace -Pvc=${{ github.run_number }}
 
       - name: Name the APK
-        run: cp android/app/build/outputs/apk/release/app-release.apk KhelaHobe.apk
+        env:
+          DIR: ${{ steps.proj.outputs.dir }}
+        run: cp "$DIR/app/build/outputs/apk/release/app-release.apk" KhelaHobe.apk
 
       - name: Keep a copy in the run (Artifacts)
         uses: actions/upload-artifact@v4
