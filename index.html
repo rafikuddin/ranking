@@ -157,6 +157,9 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .mc .of{font-size:11px;color:#9a9aae}
 .mc b.u{color:#00e676}.mc b.d{color:#ff4545}
 .tag{font-size:12px;color:#fff;background:#10243f;border-color:#3b82f6}
+.tw{position:relative}
+.rw.fell{outline:1px solid #ff4545;outline-offset:-1px;background:linear-gradient(90deg,#6a1c22 0%,#34161b 60%,#1a1a25 100%)!important}
+.rw.fell .pos{background:#ff4545;color:#fff}
 </style>
 </head>
 <body>
@@ -457,7 +460,7 @@ function row(cid,key,i,t,medal){
   const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
   return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}${esc(nm)}${mine?'<span class="you">YOU</span>':""}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
-const TRK={};
+const TRK={}, FULLBY={}, PREVBY={};
 function meBox(FT,FA){                              // "YOUR RANK" box for a distributor who logged in with his distributor code
   if(!myId) return "";
   let name="";
@@ -477,7 +480,7 @@ function fCard(cls,cat,sub,list,cid,bd,medal,full){
   if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
   cid=per+":"+cid;
   const keys=list.map(e=>e[0]), t=track(cid,keys,full);
-  if(full) TRK[cls]=t;
+  if(full){ TRK[cls]=t; FULLBY[cid]=t.full; PREVBY[cid]=t.prevFull }
   const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">No data</div>';
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
@@ -496,8 +499,8 @@ const prizeBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST)} �
 const tourBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST5)} 🇱🇰</div><div class="note">Top 10 not repeated · "from" = overall position before</div>`;
 const cerBox=()=>`<div class="prize cer">🎖 ATTEND · ${esc(CONFIG.CEREMONY)}</div>`;
 function render(flip,intro){
-  const m=per, old={}; chg=false;
-  if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top });
+  const m=per, old={}, oldHtml={}; chg=false;
+  if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top; oldHtml[e.dataset.k]=e.outerHTML });
   const T=(c,k)=>top10(c,k,m), keys=l=>new Set(l.map(e=>e[0]));
   const tD=T("Thinner","dist"), aD=T("Adhesive","dist"), tS=T("Thinner","so"), aS=T("Adhesive","so");
   const FT=top10("Thinner","dist",m,null,99999).map(e=>e[0]), FA=top10("Adhesive","dist",m,null,99999).map(e=>e[0]);
@@ -537,7 +540,10 @@ function render(flip,intro){
       const entr=newKeys.filter(k=>oldKeys.indexOf(k)<0);
       const ghosts=oldKeys.filter(k=>newKeys.indexOf(k)<0);                      // dropped out of the list: invisible, still occupy their old slot
       const cur=oldKeys.concat(entr);                                            // where everybody stands before the update
-      const goal=newKeys.concat(ghosts);
+      const FLc=FULLBY[c], PVc=PREVBY[c];
+      const rk=k=>{ const lb=k.slice(k.indexOf("|")+1); return [PVc?PVc.indexOf(lb)+1:0, FLc?FLc.indexOf(lb)+1:0] };
+      const fallen=FLc?ghosts.filter(k=>{ const r=rk(k); return r[0]>0&&r[1]>r[0] }):[];      // only dealers that really FELL get the falling row
+      const goal=newKeys.concat(fallen,ghosts.filter(k=>fallen.indexOf(k)<0));
       const states=[cur.slice()];
       for(let i=0;i<goal.length;i++){                                          // insertion sort = one overtake per step
         let j=cur.indexOf(goal[i]);
@@ -545,22 +551,53 @@ function render(flip,intro){
       }
       const S=states.length-1;
       rowsC.forEach(e=>{ if(entr.indexOf(e.dataset.k)>=0&&e.animate){ stepDone.add(e); e.animate([{opacity:0},{opacity:1}],{duration:900,easing:"ease-out"}) } });
-      if(S<=0) return;
-      const D=Math.max(500,Math.min(CONFIG.STEP_MS,10000/S)), total=S*D;      // slower: about one second per place
+      const D=Math.max(500,Math.min(CONFIG.STEP_MS,10000/Math.max(S,1))), total=Math.max(S,1)*D;
       const slot=rowsC.length>1?rowsC[1].getBoundingClientRect().top-rowsC[0].getBoundingClientRect().top:41;
       const pos=states.map(st=>{ const m={}; st.forEach((k,i)=>{ m[k]=i }); return m });
-      rowsC.forEach((e,newI)=>{
-        const k=e.dataset.k, vals=pos.map(m=>(m[k]-newI)*slot);
+      const items=rowsC.map((e,i)=>({e,k:e.dataset.k,newI:i,g:null}));
+      // dealers that dropped OUT of this list: keep their row on screen, let it fall below the list and count down to the new rank
+      const card=rowsC[0].closest(".tw"), FL=FULLBY[c], PV=PREVBY[c];
+      if(fallen.length&&FL&&card){
+        const base=rowsC[0].offsetTop, left=rowsC[0].offsetLeft, width=rowsC[0].offsetWidth;
+        const sp=document.createElement("div"); sp.style.height=(fallen.length*slot)+"px"; card.appendChild(sp);   // room for the fallen rows
+        fallen.forEach((k,gi)=>{
+          const html=oldHtml[k]; if(!html) return;
+          const tmp=document.createElement("div"); tmp.innerHTML=html; const el=tmp.firstElementChild; if(!el) return;
+          const label=k.slice(k.indexOf("|")+1), finalIdx=newKeys.length+gi;
+          el.removeAttribute("data-k"); el.className="rw fell";
+          const ps=el.querySelector(".pos"), cg=el.querySelector(".chg"), nmEl=el.querySelector(".nm");
+          if(ps) ps.className="pos";
+          if(nmEl){ nmEl.querySelectorAll(".tri,.md").forEach(x=>x.remove()); nmEl.insertAdjacentHTML("afterbegin",'<span class="tri d">▼</span>') }
+          el.style.cssText=`position:absolute;margin:0;left:${left}px;width:${width}px;top:${base+finalIdx*slot}px;z-index:5`;
+          card.appendChild(el);
+          const r1=FL.indexOf(label)+1, r0=(PV?PV.indexOf(label)+1:0)||parseInt(ps&&ps.textContent,10)||1;
+          let num=r0;
+          const setNum=n=>{ if(ps) ps.textContent=n; if(cg){ cg.className="chg dn"; cg.innerHTML=`<b>▼${Math.max(1,n-r0)}</b><i>to #${r1||n}</i>` } };
+          setNum(r0);
+          let lastMove=-1;
+          for(let s2=0;s2<S;s2++) if(pos[s2+1][k]!==pos[s2][k]){
+            lastMove=s2; setTimeout(()=>{ num=Math.min(num+1,r1||num+1); setNum(num) },(s2+0.4)*D);       // one place down, one number up
+          }
+          setTimeout(()=>{                                                                                    // below the list: keep counting down 1 by 1
+            const rest=(r1||num)-num; if(rest<=0){ setNum(r1||num); return }
+            const tick=Math.max(70,Math.min(260,4500/rest));
+            const iv=setInterval(()=>{ num++; setNum(num); if(num>=r1) clearInterval(iv) },tick);
+          },(lastMove<0?0:(lastMove+0.8)*D)+150);
+          items.push({e:el,k,newI:finalIdx,g:true});
+        });
+      }
+      if(S<=0) return;
+      items.forEach(it=>{
+        const e=it.e, k=it.k, vals=pos.map(m=>(m[k]-it.newI)*slot);
         if(vals.every(v=>v===0)||!e.animate) return;
         const kf=[];
         for(let s2=0;s2<=S;s2++){
           kf.push({offset:s2/S,transform:`translateY(${vals[s2]}px)`,easing:"ease-in-out"});
           if(s2<S&&vals[s2+1]!==vals[s2]) kf.push({offset:(s2+0.78)/S,transform:`translateY(${vals[s2+1]}px)`});
         }
-        stepDone.add(e);
-        e.style.position="relative"; e.style.zIndex=vals[0]>0?4:2;               // the climber passes over the others
+        if(!it.g){ stepDone.add(e); e.style.position="relative"; e.style.zIndex=vals[0]>0?4:2 }               // the climber passes over the others
         const an=e.animate(kf,{duration:total,fill:"backwards"});
-        an.onfinish=()=>{ e.style.position=""; e.style.zIndex="" };
+        if(!it.g) an.onfinish=()=>{ e.style.position=""; e.style.zIndex="" };
       });
     });
   }
