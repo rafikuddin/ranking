@@ -160,6 +160,14 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .tw{position:relative}
 .rw.fell{outline:1px solid #ff4545;outline-offset:-1px;background:linear-gradient(90deg,#6a1c22 0%,#34161b 60%,#1a1a25 100%)!important}
 .rw.fell .pos{background:#ff4545;color:#fff}
+#au_list{max-height:240px;overflow:auto;border:1px solid var(--bar);border-radius:8px;margin:4px 0 6px;background:var(--bg)}
+#au_list button{display:block;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #26263a;border-radius:0;padding:10px;color:#fff;font-size:13px;line-height:1.3;white-space:normal}
+#au_list button b{color:#7dd3fc;font-weight:800;margin-right:4px}
+#au_list button:active{background:#2a2a3a}
+#au_list .cnt{padding:7px 10px;color:#9a9aae;font-size:11px}
+.rw .nm{white-space:normal;line-height:1.12;font-size:12.5px;overflow:hidden;word-break:break-word}
+.nt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0}
+.tag{font-size:11px;padding:2px 5px}
 </style>
 </head>
 <body>
@@ -208,7 +216,10 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
       <input type="text" id="au_user" placeholder="Username (e.g. rahim01)" autocapitalize="none" autocomplete="off" required>
       <input type="password" id="au_pass" placeholder="Password (min 6 characters)" autocomplete="new-password" required>
       <select id="au_role"><option value="viewer">Viewer - Thinner &amp; Adhesive dashboards</option><option value="viewer_thinner">Viewer - Thinner dashboard only</option><option value="viewer_adhesive">Viewer - Adhesive dashboard only</option><option value="distributor">Distributor - login ID = distributor code</option><option value="admin">Admin - upload data &amp; add users</option></select>
-      <select id="au_dist" hidden></select>
+      <div id="au_pick" hidden>
+        <input type="search" id="au_q" placeholder="🔍 Search distributor name or code…" autocomplete="off">
+        <div id="au_list"></div>
+      </div>
       <div id="aumsg" class="msg" style="text-align:left;padding:6px 0"></div>
       <div class="hb" style="margin-top:8px"><button id="augo" type="submit">Add user</button><button id="auback" type="button">Back</button></div>
     </form>
@@ -369,6 +380,7 @@ function scheduleRetry(){ if(retryN>=4) return; clearTimeout(retryT); retryN++; 
 })();
 function run(on){ $("run").hidden=!on }
 async function load(silent,anim,fresh){
+  if(demoBusy&&silent) return;                 // do not disturb a running preview
   if(busy){                                   // a refresh is already running: keep the runner going until it finishes
     if(anim){ run(true); const w=setInterval(()=>{ if(!busy){ clearInterval(w); run(false) } },200) }
     return;
@@ -424,7 +436,9 @@ function byGroup(cat,key,gk,m,ex){
 const TEAM=["#27f4d2","#e80020","#3671c6","#ff8000","#229971","#0093cc","#6692ff","#b6babd","#52e252","#ff87bc"];
 const hue=k=>{let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))>>>0;return TEAM[h%TEAM.length]};
 // remembers the last ranking; when the order changes, the old one becomes "previous"
+let NOTRACK=false;
 function track(id,keys,full){
+  if(NOTRACK) return {prev:null,prevFull:null,full:full||null,changed:false};     // preview: show a ranking without touching the saved one
   let st=null,changed=false;
   try{ st=JSON.parse(localStorage.getItem("rk:"+id)||"null") }catch(e){}
   const sig=keys.join("\u0001");
@@ -458,7 +472,7 @@ function row(cid,key,i,t,medal){
   const tri=fl?`<span class="tri ${fl.indexOf("fu")>=0?"u":"d"}">${fl.indexOf("fu")>=0?"▲":"▼"}</span>`:"";
   const mine=!!(myId&&id&&id.toUpperCase()===myId);
   const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
-  return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}${esc(nm)}${mine?'<span class="you">YOU</span>':""}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+  return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}<span class="nt">${esc(nm.replace(/\s*\((adhesive|thinner)\)\s*$/i,""))}</span>${mine?'<span class="you">YOU</span>':""}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
 const TRK={}, FULLBY={}, PREVBY={};
 function meBox(FT,FA){                              // "YOUR RANK" box for a distributor who logged in with his distributor code
@@ -739,6 +753,27 @@ function demoRank(){
   $("menu").hidden=true; openPanel("dash");
   if(demoBusy) return;
   if(!rows.length){ $("upd").textContent="No data to preview"; return }
+  const pvT=PREVBY[per+":td"], pvA=PREVBY[per+":ad"];
+  if(!pvT&&!pvA){ sampleDemo(); return }
+  demoBusy=true;
+  const saved=rows.map(r=>r.val);
+  const setOrder=(cat,prevFull)=>{                       // make the ranking look exactly like it did before the last update
+    if(!prevFull) return;
+    const n=prevFull.length, score={}, seen={}; prevFull.forEach((k,i)=>{ score[k]=n-i });
+    rows.forEach(r=>{ if(r.cat!==cat) return; const k=r.dist;
+      if(score[k]===undefined||seen[k]){ r.val=0; return } r.val=score[k]*1000; seen[k]=1 });
+  };
+  setOrder("Thinner",pvT); setOrder("Adhesive",pvA);
+  NOTRACK=true; window.scrollTo(0,0); render(false,false);
+  $("upd").textContent="Preview: previous ranking…";
+  setTimeout(()=>{                                       // now play the real change: previous -> current ranking
+    rows.forEach((r,i)=>{ r.val=saved[i] }); NOTRACK=false;
+    render(true,false);
+    $("upd").textContent="Preview: replaying the last ranking change";
+    setTimeout(()=>{ demoBusy=false; $("upd").textContent="Preview finished" },13000);
+  },1800);
+}
+function sampleDemo(){                                   // no earlier ranking saved yet: show a sample climb instead
   demoBusy=true;
   const bk={}; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.indexOf("rk:")===0&&k!=="rk:data") bk[k]=localStorage.getItem(k) } }catch(e){}
   const saved=rows.map(r=>r.val); let done=0;
@@ -749,14 +784,10 @@ function demoRank(){
     if(r){ r.val+=L[to][1]+1-L[from][1]; done++ }
   });
   if(!done){ demoBusy=false; $("upd").textContent="Preview needs at least 4 dealers"; return }
-  window.scrollTo(0,0);
-  render(true,false);
-  $("upd").textContent="Preview: one dealer climbs to 3rd place";
-  setTimeout(()=>{                                         // put everything back as it was
-    rows.forEach((r,i)=>{ r.val=saved[i] });
-    try{ Object.keys(bk).forEach(k=>localStorage.setItem(k,bk[k])) }catch(e){}
-    render(false,false); demoBusy=false; $("upd").textContent="Preview finished";
-  },11000);
+  window.scrollTo(0,0); render(true,false);
+  $("upd").textContent="No earlier ranking yet - sample: a dealer climbs to 3rd";
+  setTimeout(()=>{ rows.forEach((r,i)=>{ r.val=saved[i] }); try{ Object.keys(bk).forEach(k=>localStorage.setItem(k,bk[k])) }catch(e){}
+    render(false,false); demoBusy=false; $("upd").textContent="Preview finished" },11000);
 }
 $("demob").onclick=demoRank;
 
@@ -765,17 +796,32 @@ $("mbtn").onclick=e=>{ e.stopPropagation(); $("menu").hidden=!$("menu").hidden }
 document.addEventListener("click",()=>{ $("menu").hidden=true });
 $("aub").onclick=()=>{ openPanel("aupanel"); $("aumsg").textContent="" };
 $("auback").onclick=()=>openPanel("dash");
-function fillDistPicker(){
-  const seen={}, opts=['<option value="">Choose the distributor…</option>'];
-  rows.forEach(r=>{ if(r.dCode&&!seen[r.dCode]){ seen[r.dCode]=1; const m=r.dist.match(/^(.*) \(([^()]+)\)$/); opts.push(`<option value="${esc(r.dCode)}|${esc(m?m[1]:r.dist)}">${esc(r.dCode)} · ${esc(m?m[1]:r.dist)}</option>`) } });
-  $("au_dist").innerHTML=opts.join("");
+let distList=[];
+function buildDistList(){
+  const seen={}; distList=[];
+  rows.forEach(r=>{ if(r.dCode&&!seen[r.dCode]){ seen[r.dCode]=1; const m=r.dist.match(/^(.*) \(([^()]+)\)$/); distList.push({code:r.dCode,name:m?m[1]:r.dist}) } });
+  distList.sort((a,b)=>a.code.localeCompare(b.code));
 }
+function showDistList(){
+  const q=$("au_q").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const hit=distList.filter(d=>{ const t=(d.code+" "+d.name).toLowerCase(); return q.every(w=>t.indexOf(w)>=0) });
+  const cap=hit.slice(0,60);
+  $("au_list").innerHTML=`<div class="cnt">${hit.length} of ${distList.length} distributors${hit.length>60?" - type more to narrow the list":""}</div>`+
+    cap.map(d=>`<button type="button" data-c="${esc(d.code)}" data-n="${esc(d.name)}"><b>${esc(d.code)}</b> · ${esc(d.name)}</button>`).join("")+(hit.length?"":'<div class="cnt">No distributor found</div>');
+  $("au_list").hidden=false;
+}
+$("au_q").oninput=showDistList;
+$("au_q").onfocus=()=>{ if($("au_list").hidden) showDistList() };
+$("au_list").onclick=e=>{                                   // tap a distributor: his code becomes the login ID
+  const b=e.target.closest("button"); if(!b) return;
+  $("au_user").value=b.dataset.c.toLowerCase(); $("au_name").value=b.dataset.n;
+  $("au_q").value=b.dataset.c+" · "+b.dataset.n; $("au_list").hidden=true;
+};
 $("au_role").onchange=()=>{
   const d=$("au_role").value==="distributor";
-  $("au_dist").hidden=!d; $("au_user").readOnly=d; $("au_name").readOnly=d;
-  if(d){ fillDistPicker(); $("au_user").placeholder="Login ID = distributor code (auto)" } else { $("au_user").placeholder="Username (e.g. rahim01)" }
+  $("au_pick").hidden=!d; $("au_user").readOnly=d; $("au_name").readOnly=d; $("au_q").value=""; $("au_list").hidden=true;
+  if(d){ buildDistList(); $("au_user").placeholder="Login ID = distributor code (auto)"; showDistList() } else { $("au_user").placeholder="Username (e.g. rahim01)" }
 };
-$("au_dist").onchange=()=>{ const v=$("au_dist").value.split("|"); if(v[0]){ $("au_user").value=v[0].toLowerCase(); $("au_name").value=v.slice(1).join("|") } };
 $("auf").onsubmit=async e=>{
   e.preventDefault();
   const m=$("aumsg"), b=$("augo"), pw=$("au_pass").value;
