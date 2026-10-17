@@ -142,10 +142,21 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .rw.fd .chg{animation:arrD .55s ease-in-out 4}
 @keyframes arrU{50%{transform:translateY(-6px) scale(1.25)}}
 @keyframes arrD{50%{transform:translateY(6px) scale(1.25)}}
-.tri{flex:none;margin-right:7px;font-size:12px;line-height:1;animation:triFade 7s forwards}
+.tri{flex:none;margin-right:7px;font-size:12px;line-height:1;animation:triFade 14s forwards}
 .tri.u{color:#00e676}.tri.d{color:#ff4545}
 @keyframes triFade{0%,70%{opacity:1}100%{opacity:0}}
 .rw.fu,.rw.fd{animation:none!important}
+.rw.mine{outline:2px solid #00e5ff;outline-offset:-2px;background:linear-gradient(90deg,#0b6b86 0%,#10405a 55%,#161d2a 100%)!important;box-shadow:0 0 16px rgba(0,229,255,.55)}
+.you{margin-left:8px;padding:1px 6px;border-radius:3px;background:#00e5ff;color:#06222c;font-size:10px;font-weight:900;letter-spacing:.06em;font-style:normal}
+.meb{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:linear-gradient(135deg,#0b6b86,#0f2f4d);border:1px solid #00e5ff;box-shadow:0 0 18px rgba(0,229,255,.35)}
+.meb .mt{font-weight:900;letter-spacing:.1em;font-size:12px;color:#9ff3ff}
+.meb .mn{font-weight:800;font-size:15px;margin:2px 0 8px;text-transform:uppercase}
+.mrs{display:flex;gap:8px;flex-wrap:wrap}
+.mc{display:flex;align-items:center;gap:6px;background:#0c1622;border-radius:6px;padding:6px 10px}
+.mc .rk{display:inline;width:auto;color:#fff;font-size:22px;font-weight:900}
+.mc .of{font-size:11px;color:#9a9aae}
+.mc b.u{color:#00e676}.mc b.d{color:#ff4545}
+.tag{font-size:12px;color:#fff;background:#10243f;border-color:#3b82f6}
 </style>
 </head>
 <body>
@@ -161,6 +172,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
       <div id="menu" hidden>
         <button id="upb" hidden>⬆ Upload data</button>
         <button id="aub" hidden>＋ Add user</button>
+        <button id="demob">▶ Preview rank animation</button>
         <button id="pwb">🔑 Change password</button>
         <button id="out">⎋ Logout</button>
       </div>
@@ -192,7 +204,8 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
       <input type="text" id="au_name" placeholder="Full name" autocomplete="off">
       <input type="text" id="au_user" placeholder="Username (e.g. rahim01)" autocapitalize="none" autocomplete="off" required>
       <input type="password" id="au_pass" placeholder="Password (min 6 characters)" autocomplete="new-password" required>
-      <select id="au_role"><option value="viewer">Viewer - Thinner &amp; Adhesive dashboards</option><option value="viewer_thinner">Viewer - Thinner dashboard only</option><option value="viewer_adhesive">Viewer - Adhesive dashboard only</option><option value="admin">Admin - upload data &amp; add users</option></select>
+      <select id="au_role"><option value="viewer">Viewer - Thinner &amp; Adhesive dashboards</option><option value="viewer_thinner">Viewer - Thinner dashboard only</option><option value="viewer_adhesive">Viewer - Adhesive dashboard only</option><option value="distributor">Distributor - login ID = distributor code</option><option value="admin">Admin - upload data &amp; add users</option></select>
+      <select id="au_dist" hidden></select>
       <div id="aumsg" class="msg" style="text-align:left;padding:6px 0"></div>
       <div class="hb" style="margin-top:8px"><button id="augo" type="submit">Add user</button><button id="auback" type="button">Back</button></div>
     </form>
@@ -234,6 +247,7 @@ const CONFIG = {
   CEREMONY: "National Award Giving Ceremony",   // Top 10 Sales Officers attend this     // shown on the Sales Officer cards
   SHOW_TOP10: true,         // the 4 "Top 10" cards
   SHOW_ZONE_AREA: true,     // zone-wise (Thinner) / area-wise (Adhesive) 1st & 2nd cards - Top 10 people are NOT repeated here
+  STEP_MS: 1100,               // time for ONE place up/down (milliseconds) - bigger number = slower
   SHOW_SALES_OFFICERS: false   // true = bring back the Sales Officer cards
 };
 /* ====================================== */
@@ -296,9 +310,10 @@ function ingest(j){
     rows.forEach(r=>{ if(r.dCode) r.dist=(dn[r.dCode]||r.dCode)+" ("+r.dCode+")" });
 }
 function saveCache(j){            // lets the app open instantly next time (only when "keep me signed in")
-  try{ if(localStorage.getItem("tk")) localStorage.setItem("rk:data",JSON.stringify({header:j.header,rows:j.rows,role:j.role})) }catch(e){}
+  try{ if(localStorage.getItem("tk")) localStorage.setItem("rk:data",JSON.stringify({header:j.header,rows:j.rows,role:j.role,user:myId})) }catch(e){}
 }
 function showNow(d,flip,intro){
+  if(d.user) myId=norm(d.user);
   ingest(d); showMain(); setRole(d.role); saveCache(d); render(!!flip,!!intro);
   $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
 }
@@ -350,7 +365,7 @@ function scheduleRetry(){ if(retryN>=4) return; clearTimeout(retryT); retryN++; 
   $("rstage").innerHTML=stairs+crew.map(c=>`<div class="rn" style="bottom:${10+c[5]}px;z-index:${10-c[5]}"><div class="rx" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="ry" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="shd"></div><div class="bd" style="--T:${c[6]}s;--o:${c[7]}">${man(c[0],c[1],c[2])}</div></div></div></div>`).join("");
 })();
 function run(on){ $("run").hidden=!on }
-async function load(silent,anim){
+async function load(silent,anim,fresh){
   if(busy){                                   // a refresh is already running: keep the runner going until it finishes
     if(anim){ run(true); const w=setInterval(()=>{ if(!busy){ clearInterval(w); run(false) } },200) }
     return;
@@ -359,8 +374,9 @@ async function load(silent,anim){
   if(!silent) $("app").innerHTML='<div class="msg">Loading data…</div>';
   try{
     if(!CONFIG.API_URL||CONFIG.API_URL.startsWith("PASTE")) throw new Error("Set API_URL in index.html CONFIG.");
-    const j=await api({action:"data",token:getToken()});
+    const j=await api({action:"data",token:getToken(),fresh:!!fresh});
     if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+    if(j.user) myId=norm(j.user);
     ingest(j); showMain(); setRole(j.role); saveCache(j);
     if(anim){ const w=500-(Date.now()-t0); if(w>0) await new Promise(r=>setTimeout(r,w)); run(false) }   // runner shows at least half a second
     render(!!silent,!!anim);
@@ -437,13 +453,31 @@ function row(cid,key,i,t,medal){
       else if(d<0){ ch=`<span class="chg dn">▼${-d}</span>`; if(t.changed) fl=" fd" } }
   }
   const tri=fl?`<span class="tri ${fl.indexOf("fu")>=0?"u":"d"}">${fl.indexOf("fu")>=0?"▲":"▼"}</span>`:"";
+  const mine=!!(myId&&id&&id.toUpperCase()===myId);
   const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
-  return `<div class="rw${fl}${mc}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}${esc(nm)}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+  return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}${esc(nm)}${mine?'<span class="you">YOU</span>':""}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+}
+const TRK={};
+function meBox(FT,FA){                              // "YOUR RANK" box for a distributor who logged in with his distributor code
+  if(!myId) return "";
+  let name="";
+  const one=(F,cls,label)=>{
+    if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
+    const k=F.find(x=>{ const m=x.match(/\(([^()]+)\)$/); return m&&m[1].toUpperCase()===myId }); if(!k) return "";
+    name=k.replace(/ \([^()]*\)$/,"");
+    const r=F.indexOf(k)+1, t=TRK[cls]; let mv="";
+    if(t&&t.prevFull){ const pp=t.prevFull.indexOf(k)+1; if(pp>0&&pp!==r) mv=pp>r?`<b class="u">▲${pp-r}</b>`:`<b class="d">▼${r-pp}</b>` }
+    return `<div class="mc ${cls}"><span class="cat">${label}</span><span class="rk">#${r}</span><span class="of">of ${F.length}</span>${mv}</div>`;
+  };
+  const a=one(FT,"t","THINNER"), b=one(FA,"a","ADHESIVE");
+  if(!a&&!b) return "";
+  return `<div class="meb"><div class="mt">⭐ YOUR RANK</div><div class="mn">${esc(name)} · <b>${esc(myId)}</b></div><div class="mrs">${a}${b}</div></div>`;
 }
 function fCard(cls,cat,sub,list,cid,bd,medal,full){
   if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
   cid=per+":"+cid;
   const keys=list.map(e=>e[0]), t=track(cid,keys,full);
+  if(full) TRK[cls]=t;
   const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">No data</div>';
   return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
 }
@@ -483,7 +517,7 @@ function render(flip,intro){
    (CONFIG.SHOW_SALES_OFFICERS?gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m,keys(tS)),has.zone,"Zone","tsz","ZONE",nz):"")+
    gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m,keys(aD)),has.area,"Area","ada","AREA",na)+
    (CONFIG.SHOW_SALES_OFFICERS?gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m,keys(aS)),has.area,"Area","asa","AREA",na):"")):"";
-  $("app").innerHTML=`<div class="grid">`+top10Cards+zoneCards+`</div>`;
+  $("app").innerHTML=meBox(FT,FA)+`<div class="grid">`+top10Cards+zoneCards+`</div>`;
   // "previous update -> current update" line
   let meta=null; try{ meta=JSON.parse(localStorage.getItem("rk:meta")||"null") }catch(e){}
   if(!meta) meta={cur:Date.now(),prev:null};
@@ -510,9 +544,9 @@ function render(flip,intro){
         while(j>i){ const t=cur[j-1]; cur[j-1]=cur[j]; cur[j]=t; states.push(cur.slice()); j--; }
       }
       const S=states.length-1;
-      rowsC.forEach(e=>{ if(entr.indexOf(e.dataset.k)>=0&&e.animate){ stepDone.add(e); e.animate([{opacity:0},{opacity:1}],{duration:500,easing:"ease-out"}) } });
+      rowsC.forEach(e=>{ if(entr.indexOf(e.dataset.k)>=0&&e.animate){ stepDone.add(e); e.animate([{opacity:0},{opacity:1}],{duration:900,easing:"ease-out"}) } });
       if(S<=0) return;
-      const D=Math.max(90,Math.min(420,3200/S)), total=S*D;
+      const D=Math.max(500,Math.min(CONFIG.STEP_MS,10000/S)), total=S*D;      // slower: about one second per place
       const slot=rowsC.length>1?rowsC[1].getBoundingClientRect().top-rowsC[0].getBoundingClientRect().top:41;
       const pos=states.map(st=>{ const m={}; st.forEach((k,i)=>{ m[k]=i }); return m });
       rowsC.forEach((e,newI)=>{
@@ -521,7 +555,7 @@ function render(flip,intro){
         const kf=[];
         for(let s2=0;s2<=S;s2++){
           kf.push({offset:s2/S,transform:`translateY(${vals[s2]}px)`,easing:"ease-in-out"});
-          if(s2<S&&vals[s2+1]!==vals[s2]) kf.push({offset:(s2+0.72)/S,transform:`translateY(${vals[s2+1]}px)`});
+          if(s2<S&&vals[s2+1]!==vals[s2]) kf.push({offset:(s2+0.78)/S,transform:`translateY(${vals[s2+1]}px)`});
         }
         stepDone.add(e);
         e.style.position="relative"; e.style.zIndex=vals[0]>0?4:2;               // the climber passes over the others
@@ -531,7 +565,7 @@ function render(flip,intro){
     });
   }
   // ---- flip animations ----
-  const calm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const calm=false;                                   // always animate (the phone's "remove animations" setting must not hide the rank changes)
   if(!calm&&document.querySelectorAll("[data-k]").length){
     let i=0; const haveOld=Object.keys(old).length>0;
     if(haveOld) stepAnimate();
@@ -552,7 +586,7 @@ function render(flip,intro){
     });
   }
 }
-$("ref").onclick=()=>{ $("upd").textContent="Refreshing…"; load(true,true) };
+$("ref").onclick=()=>{ $("upd").textContent="Refreshing…"; load(true,true,true) };
 /* ---- auth ---- */
 async function api(body){
   const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),30000);       // never hang forever
@@ -566,7 +600,7 @@ async function api(body){
 const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
 const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk");try{localStorage.removeItem("rk:data")}catch(e){}};
 function showLogin(msg){ $("main").hidden=true; $("login").hidden=false; $("lerr").textContent=msg||""; $("lp").value="" }
-let userRole="viewer";
+let userRole="viewer", myId="";
 function setRole(r){ userRole=r||"viewer"; $("upb").hidden=r!=="admin"; $("aub").hidden=r!=="admin" }
 function openPanel(id){ ["dash","uppanel","pwpanel","aupanel"].forEach(x=>$(x).hidden=x!==id); $("menu").hidden=true }
 function showMain(){ $("login").hidden=true; $("main").hidden=false; openPanel("dash") }
@@ -578,7 +612,7 @@ $("lf").onsubmit=async e=>{
     if(!j.ok) throw new Error(j.error);
     (  $("lr").checked?localStorage:sessionStorage ).setItem("tk",j.token);
     $("lp").value="";
-    if(j.sales) showNow({header:j.sales.header,rows:j.sales.rows,role:j.role},false,true);   // fast path: data came with login
+    if(j.sales) showNow({header:j.sales.header,rows:j.sales.rows,role:j.role,user:j.user||$("lu").value},false,true);   // fast path: data came with login
     else load(false,true);                                                                // older backend: fetch separately
   }catch(err){ $("lerr").textContent=err.message }
   b.disabled=false; b.textContent="Sign in";
@@ -657,26 +691,65 @@ $("upgo").onclick=async()=>{
       if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
     }
     up={header:null,rows:[]}; $("upfile").value="";
-    await load();
+    await load(true,true,true);
     $("upd").textContent="Uploaded "+total+" rows ✔";
   }catch(err){ $("upmsg").innerHTML='<span class="err">'+esc(err.message)+'</span>'; btn.disabled=false }
 };
+
+/* ---- preview: shows the one-by-one rank climb on screen, without touching your real data ---- */
+let demoBusy=false;
+function demoRank(){
+  $("menu").hidden=true; openPanel("dash");
+  if(demoBusy) return;
+  if(!rows.length){ $("upd").textContent="No data to preview"; return }
+  demoBusy=true;
+  const bk={}; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k.indexOf("rk:")===0&&k!=="rk:data") bk[k]=localStorage.getItem(k) } }catch(e){}
+  const saved=rows.map(r=>r.val); let done=0;
+  ["Thinner","Adhesive"].forEach(cat=>{
+    const L=top10(cat,"dist",per,null,99999);
+    if(L.length<4) return;
+    const from=Math.min(7,L.length-1), to=2, r=rows.find(x=>x.cat===cat&&x.dist===L[from][0]);
+    if(r){ r.val+=L[to][1]+1-L[from][1]; done++ }
+  });
+  if(!done){ demoBusy=false; $("upd").textContent="Preview needs at least 4 dealers"; return }
+  window.scrollTo(0,0);
+  render(true,false);
+  $("upd").textContent="Preview: one dealer climbs to 3rd place";
+  setTimeout(()=>{                                         // put everything back as it was
+    rows.forEach((r,i)=>{ r.val=saved[i] });
+    try{ Object.keys(bk).forEach(k=>localStorage.setItem(k,bk[k])) }catch(e){}
+    render(false,false); demoBusy=false; $("upd").textContent="Preview finished";
+  },11000);
+}
+$("demob").onclick=demoRank;
 
 /* ---- menu + add user ---- */
 $("mbtn").onclick=e=>{ e.stopPropagation(); $("menu").hidden=!$("menu").hidden };
 document.addEventListener("click",()=>{ $("menu").hidden=true });
 $("aub").onclick=()=>{ openPanel("aupanel"); $("aumsg").textContent="" };
 $("auback").onclick=()=>openPanel("dash");
+function fillDistPicker(){
+  const seen={}, opts=['<option value="">Choose the distributor…</option>'];
+  rows.forEach(r=>{ if(r.dCode&&!seen[r.dCode]){ seen[r.dCode]=1; const m=r.dist.match(/^(.*) \(([^()]+)\)$/); opts.push(`<option value="${esc(r.dCode)}|${esc(m?m[1]:r.dist)}">${esc(r.dCode)} · ${esc(m?m[1]:r.dist)}</option>`) } });
+  $("au_dist").innerHTML=opts.join("");
+}
+$("au_role").onchange=()=>{
+  const d=$("au_role").value==="distributor";
+  $("au_dist").hidden=!d; $("au_user").readOnly=d; $("au_name").readOnly=d;
+  if(d){ fillDistPicker(); $("au_user").placeholder="Login ID = distributor code (auto)" } else { $("au_user").placeholder="Username (e.g. rahim01)" }
+};
+$("au_dist").onchange=()=>{ const v=$("au_dist").value.split("|"); if(v[0]){ $("au_user").value=v[0].toLowerCase(); $("au_name").value=v.slice(1).join("|") } };
 $("auf").onsubmit=async e=>{
   e.preventDefault();
   const m=$("aumsg"), b=$("augo"), pw=$("au_pass").value;
+  if($("au_role").value==="distributor"&&!$("au_user").value){ m.innerHTML='<span class="err">Choose the distributor first.</span>'; return }
   if(pw.length<6){ m.innerHTML='<span class="err">Password must be at least 6 characters.</span>'; return }
   b.disabled=true; m.textContent="Saving…";
   try{
     const j=await api({action:"adduser",token:getToken(),name:$("au_name").value,username:$("au_user").value,password:pw,role:$("au_role").value});
     if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
     m.textContent="✔ User added: "+$("au_user").value.trim().toLowerCase();
-    $("au_name").value=""; $("au_user").value=""; $("au_pass").value=""; $("au_role").value="viewer";
+    $("au_name").value=""; $("au_user").value=""; $("au_pass").value=""; $("au_role").value="viewer"; $("au_role").onchange();
   }catch(err){ m.innerHTML='<span class="err">'+esc(err.message)+'</span>' }
   b.disabled=false;
 };
