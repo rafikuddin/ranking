@@ -168,84 +168,100 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .rw .nm{white-space:normal;line-height:1.12;font-size:12.5px;overflow:hidden;word-break:break-word}
 .nt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-width:0}
 .tag{font-size:11px;padding:2px 5px}
+.lnk{display:block;margin:12px auto 0;background:transparent;border:0;color:#9ec5ff;text-decoration:underline;font-size:13px}
+body.bn *{font-style:normal!important;letter-spacing:normal!important}
+body.bn{line-height:1.5}
+body.bn .rw .nm{font-size:13.5px;line-height:1.3}
+body.bn .lb-title{font-size:30px;line-height:1.3}
+body.bn .cat,body.bn .gh,body.bn .prize{line-height:1.4}
+.langbox{border-top:1px solid #33334a;margin-top:4px;padding:8px 6px 6px}
+.lt2{font-size:12px;color:#9a9aae;padding:0 6px 6px}
+.langrow{display:flex;gap:6px}
+#menu .langrow button{display:block;flex:1;width:auto;text-align:center;padding:9px 6px;border:1px solid #3a3a52;border-radius:6px;background:#12121c;font-size:14px}
+#menu .langrow button.on,.langrow2 button.on{background:#e10600;border-color:#e10600;color:#fff;font-weight:800}
+.langrow2{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.langrow2 button{min-width:96px;padding:8px 14px;border:1px solid #3a3a52;border-radius:6px;background:#12121c;color:#fff;font-size:14px}
 </style>
 </head>
 <body>
 <div id="run" hidden>
   <div class="stage" id="rstage"></div>
-  <div class="rt">REFRESHING…</div>
-  <div class="rs">Race to catch the prize!</div>
+  <div class="rt" data-i>REFRESHING…</div>
+  <div class="rs" data-i>Race to catch the prize!</div>
 </div>
 <div id="main" hidden><header>
-  <div class="brand">KHELA HOBE<div class="sub" id="upd">Loading…</div></div>
+  <div class="brand"><span data-i>KHELA HOBE</span><div class="sub" id="upd">Loading…</div></div>
   <div class="hb"><button id="ref" title="Refresh">↻</button>
     <div class="mw"><button id="mbtn" title="Menu">☰</button>
       <div id="menu" hidden>
-        <button id="upb" hidden>⬆ Upload data</button>
-        <button id="aub" hidden>＋ Add user</button>
-        <button id="demob">▶ Preview rank animation</button>
-        <button id="pwb">🔑 Change password</button>
-        <button id="out">⎋ Logout</button>
+        <button id="upb" data-i hidden>⬆ Upload data</button>
+        <button id="aub" data-i hidden>＋ Add user</button>
+        <button id="demob" data-i>▶ Preview rank animation</button>
+        <button id="pwb" data-i>🔑 Change password</button>
+        <div class="langbox"><div class="lt2">🌐 ভাষা / Language</div><div class="langrow"><button type="button" data-lang="bn">বাংলা</button><button type="button" data-lang="en">English</button></div></div>
+        <button id="out" data-i>⎋ Logout</button>
       </div>
     </div>
   </div>
 </header>
-<div id="dash" class="f1"><div class="lb-title">LEADER BOARD</div>
+<div id="dash" class="f1"><div class="lb-title" data-i>LEADER BOARD</div>
 <div class="co">Samuda Spec Chem Ltd.</div>
 <div class="chk"></div>
-<div class="lv"><i></i>LIVE · updates every minute</div>
+<div class="lv"><i></i><span data-i>LIVE · updates every minute</span></div>
 <div class="cmp" id="cmp"></div>
 <div id="app"><div class="msg">Loading data…</div></div>
 </div>
 <div id="uppanel" hidden>
   <div class="card" style="margin-top:6px">
-    <h3>Upload sales data</h3>
+    <h3 data-i>Upload sales data</h3>
     <div class="sub" id="uphelp"></div>
     <input type="file" id="upfile" accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
     <div id="upmsg" class="msg" style="text-align:left;padding:6px 0"></div>
-    <label class="opt"><input type="radio" name="upmode" value="append" checked> Add to existing data</label>
-    <label class="opt"><input type="radio" name="upmode" value="replace"> Replace all existing data</label>
-    <div class="hb" style="margin-top:14px"><button id="upgo" disabled>Upload</button><button id="upback">Back</button></div>
+    <label class="opt"><input type="radio" name="upmode" value="append" checked> <span data-i>Add to existing data</span></label>
+    <label class="opt"><input type="radio" name="upmode" value="replace"> <span data-i>Replace all existing data</span></label>
+    <div class="hb" style="margin-top:14px"><button id="upgo" data-i disabled>Upload</button><button id="upback" data-i>Back</button></div>
   </div>
 </div>
 <div id="aupanel" hidden>
   <div class="card" style="margin-top:6px">
-    <h3>Add user</h3>
+    <h3 data-i>Add user</h3>
     <form id="auf" autocomplete="off">
-      <input type="text" id="au_name" placeholder="Full name" autocomplete="off">
-      <input type="text" id="au_user" placeholder="Username (e.g. rahim01)" autocapitalize="none" autocomplete="off" required>
-      <input type="password" id="au_pass" placeholder="Password (min 6 characters)" autocomplete="new-password" required>
-      <select id="au_role"><option value="viewer">Viewer - Thinner &amp; Adhesive dashboards</option><option value="viewer_thinner">Viewer - Thinner dashboard only</option><option value="viewer_adhesive">Viewer - Adhesive dashboard only</option><option value="distributor">Distributor - login ID = distributor code</option><option value="admin">Admin - upload data &amp; add users</option></select>
+      <input type="text" id="au_name" data-ip placeholder="Full name" autocomplete="off">
+      <input type="text" id="au_user" data-ip placeholder="Username (e.g. rahim01)" autocapitalize="none" autocomplete="off" required>
+      <input type="password" id="au_pass" data-ip placeholder="Password (min 6 characters)" autocomplete="new-password" required>
+      <select id="au_role"><option value="viewer" data-i>Viewer - Thinner &amp; Adhesive dashboards</option><option value="viewer_thinner" data-i>Viewer - Thinner dashboard only</option><option value="viewer_adhesive" data-i>Viewer - Adhesive dashboard only</option><option value="distributor" data-i>Distributor - login ID = distributor code (sees own team only)</option><option value="admin" data-i>Admin - upload data &amp; add users</option></select>
       <div id="au_pick" hidden>
-        <input type="search" id="au_q" placeholder="🔍 Search distributor name or code…" autocomplete="off">
+        <input type="search" id="au_q" data-ip placeholder="🔍 Search distributor name or code…" autocomplete="off">
         <div id="au_list"></div>
+        <div id="au_team" class="note" style="text-transform:none"></div>
       </div>
       <div id="aumsg" class="msg" style="text-align:left;padding:6px 0"></div>
-      <div class="hb" style="margin-top:8px"><button id="augo" type="submit">Add user</button><button id="auback" type="button">Back</button></div>
+      <div class="hb" style="margin-top:8px"><button id="augo" type="submit" data-i>Add user</button><button id="auback" type="button" data-i>Back</button></div>
     </form>
   </div>
 </div>
 <div id="pwpanel" hidden>
   <div class="card" style="margin-top:6px">
-    <h3>Change password</h3>
+    <h3 data-i>Change password</h3>
     <form id="pwf">
-      <input type="password" id="pw0" placeholder="Current password" autocomplete="current-password" required>
-      <input type="password" id="pw1" placeholder="New password (min 6 characters)" autocomplete="new-password" required>
-      <input type="password" id="pw2" placeholder="Confirm new password" autocomplete="new-password" required>
+      <input type="password" id="pw0" data-ip placeholder="Current password" autocomplete="current-password" required>
+      <input type="password" id="pw1" data-ip placeholder="New password (min 6 characters)" autocomplete="new-password" required>
+      <input type="password" id="pw2" data-ip placeholder="Confirm new password" autocomplete="new-password" required>
       <div id="pwmsg" class="msg" style="text-align:left;padding:6px 0"></div>
-      <div class="hb" style="margin-top:8px"><button id="pwgo" type="submit">Save password</button><button id="pwback" type="button">Back</button></div>
+      <div class="hb" style="margin-top:8px"><button id="pwgo" type="submit" data-i>Save password</button><button id="pwback" type="button" data-i>Back</button></div>
     </form>
   </div>
 </div>
 </div>
 <div id="login" hidden>
-  <h1>Khela Hobe</h1><div class="co">Samuda Spec Chem Ltd.</div><div class="sub">Sign in to continue</div>
+  <h1 data-i>Khela Hobe</h1><div class="co">Samuda Spec Chem Ltd.</div><div class="sub" data-i>Sign in to continue</div>
   <form id="lf" autocomplete="on">
-    <input type="text" id="lu" placeholder="Username" autocomplete="username" autocapitalize="none" required>
-    <input type="password" id="lp" placeholder="Password" autocomplete="current-password" required>
-    <label><input type="checkbox" id="lr"> Keep me signed in on this device</label>
-    <button class="go" id="lb" type="submit">Sign in</button>
+    <input type="text" id="lu" data-ip placeholder="Username" autocomplete="username" autocapitalize="none" required>
+    <input type="password" id="lp" data-ip placeholder="Password" autocomplete="current-password" required>
+    <label><input type="checkbox" id="lr"> <span data-i>Keep me signed in on this device</span></label>
+    <button class="go" id="lb" type="submit" data-i>Sign in</button>
     <div id="lerr"></div>
+    <div class="langrow2"><button type="button" data-lang="bn">বাংলা</button><button type="button" data-lang="en">English</button></div>
   </form>
 </div>
 
@@ -258,6 +274,7 @@ const CONFIG = {
   CURRENCY: "৳",
   PRIZE_DIST: "Thailand Tour",   // prize on the Top 10 Distributor cards
   PRIZE_DIST5: "Sri Lanka Tour",                // prize on the Top 5 Distributor cards (outside the Top 10)
+  LANG: "bn",                                   // default language: "bn" = Bangla, "en" = English (users can switch in the menu)
   CEREMONY: "National Award Giving Ceremony",   // Top 10 Sales Officers attend this     // shown on the Sales Officer cards
   SHOW_TOP10: true,         // the 4 "Top 10" cards
   SHOW_ZONE_AREA: true,     // zone-wise (Thinner) / area-wise (Adhesive) 1st & 2nd cards - Top 10 people are NOT repeated here
@@ -267,6 +284,64 @@ const CONFIG = {
 /* ====================================== */
 
 const $ = id => document.getElementById(id);
+/* ---- language: Bangla / English ---- */
+const BN={
+ "KHELA HOBE":"খেলা হবে","Khela Hobe":"খেলা হবে","Sign in to continue":"চালিয়ে যেতে সাইন ইন করুন",
+ "Username":"ইউজারনেম","Password":"পাসওয়ার্ড","Keep me signed in on this device":"এই ডিভাইসে আমাকে সাইন ইন রাখুন",
+ "Sign in":"সাইন ইন","Signing in…":"সাইন ইন হচ্ছে…","LEADER BOARD":"লিডার বোর্ড",
+ "LIVE · updates every minute":"লাইভ · প্রতি মিনিটে আপডেট হয়","REFRESHING…":"রিফ্রেশ হচ্ছে…","Race to catch the prize!":"পুরস্কার ধরার দৌড়!",
+ "⬆ Upload data":"⬆ ডাটা আপলোড","＋ Add user":"＋ ইউজার যোগ করুন","▶ Preview rank animation":"▶ র‍্যাংক অ্যানিমেশন প্রিভিউ",
+ "🔑 Change password":"🔑 পাসওয়ার্ড পরিবর্তন","⎋ Logout":"⎋ লগআউট",
+ "Upload sales data":"বিক্রয় ডাটা আপলোড","Add to existing data":"আগের ডাটার সাথে যোগ করুন","Replace all existing data":"আগের সব ডাটা বদলে দিন",
+ "Upload":"আপলোড","Back":"ফিরে যান","Add user":"ইউজার যোগ করুন","Full name":"পুরো নাম",
+ "Username (e.g. rahim01)":"ইউজারনেম (যেমন rahim01)","Password (min 6 characters)":"পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)",
+ "Viewer - Thinner & Adhesive dashboards":"ভিউয়ার - থিনার ও অ্যাডহেসিভ ড্যাশবোর্ড","Viewer - Thinner dashboard only":"ভিউয়ার - শুধু থিনার ড্যাশবোর্ড",
+ "Viewer - Adhesive dashboard only":"ভিউয়ার - শুধু অ্যাডহেসিভ ড্যাশবোর্ড","Distributor - login ID = distributor code (sees own team only)":"ডিস্ট্রিবিউটর - লগইন আইডি = ডিস্ট্রিবিউটর কোড (শুধু নিজের টিম দেখবে)",
+ "Admin - upload data & add users":"অ্যাডমিন - ডাটা আপলোড ও ইউজার যোগ","🔍 Search distributor name or code…":"🔍 ডিস্ট্রিবিউটরের নাম বা কোড খুঁজুন…",
+ "Login ID = distributor code (auto)":"লগইন আইডি = ডিস্ট্রিবিউটর কোড (স্বয়ংক্রিয়)",
+ "Change password":"পাসওয়ার্ড পরিবর্তন","Current password":"বর্তমান পাসওয়ার্ড","New password (min 6 characters)":"নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)",
+ "Confirm new password":"নতুন পাসওয়ার্ড আবার লিখুন","Save password":"পাসওয়ার্ড সংরক্ষণ করুন",
+ "Updated ":"আপডেট: ","Loading data…":"ডাটা লোড হচ্ছে…","Refreshing…":"রিফ্রেশ হচ্ছে…","Updating…":"আপডেট হচ্ছে…","Error":"ত্রুটি",
+ "Offline - retrying":"অফলাইন - আবার চেষ্টা হচ্ছে","Update failed: ":"আপডেট হয়নি: ","Session expired. Please sign in again.":"সেশন শেষ হয়েছে। আবার সাইন ইন করুন।",
+ "Server sent an unexpected reply - check the Apps Script deployment (New version, access: Anyone).":"সার্ভার থেকে অপ্রত্যাশিত উত্তর এসেছে - Apps Script ডিপ্লয়মেন্ট দেখুন (New version, Anyone)।",
+ "Reading file…":"ফাইল পড়া হচ্ছে…","The file has no data rows.":"ফাইলে কোনো ডাটা সারি নেই।",
+ "This will DELETE all existing sales data and replace it with this file. Continue?":"এতে আগের সব বিক্রয় ডাটা মুছে এই ফাইলের ডাটা বসবে। চালিয়ে যাবেন?",
+ "No data to preview":"প্রিভিউয়ের জন্য ডাটা নেই","Preview: previous ranking…":"প্রিভিউ: আগের র‍্যাংকিং…","Preview: replaying the last ranking change":"প্রিভিউ: শেষ র‍্যাংকিং পরিবর্তন আবার দেখানো হচ্ছে",
+ "Preview finished":"প্রিভিউ শেষ","Preview needs at least 4 dealers":"প্রিভিউয়ের জন্য কমপক্ষে ৪ জন ডিলার দরকার","No earlier ranking yet - sample: a dealer climbs to 3rd":"আগের র‍্যাংকিং নেই - নমুনা: একজন ডিলার ৩য় স্থানে উঠছে",
+ "Choose the distributor first.":"আগে ডিস্ট্রিবিউটর বাছাই করুন।","Password must be at least 6 characters.":"পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+ "New password must be at least 6 characters.":"নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।","New passwords do not match.":"নতুন পাসওয়ার্ড দুটি মেলেনি।","Saving…":"সংরক্ষণ হচ্ছে…",
+ "No distributor found":"কোনো ডিস্ট্রিবিউটর পাওয়া যায়নি","Invalid username or password":"ইউজারনেম বা পাসওয়ার্ড ভুল","Enter username and password":"ইউজারনেম ও পাসওয়ার্ড দিন",
+ "Too many attempts. Try again in 15 minutes.":"অনেকবার ভুল হয়েছে। ১৫ মিনিট পরে চেষ্টা করুন।","Too many wrong attempts. Try again in 15 minutes.":"অনেকবার ভুল হয়েছে। ১৫ মিনিট পরে চেষ্টা করুন।",
+ "Current password is wrong.":"বর্তমান পাসওয়ার্ড ভুল।","New password must be different from the current one.":"নতুন পাসওয়ার্ড বর্তমানটির থেকে আলাদা হতে হবে।",
+ "This username already exists.":"এই ইউজারনেম আগে থেকেই আছে।","Only an admin can add users.":"শুধু অ্যাডমিন ইউজার যোগ করতে পারেন।","Only an admin user can upload data.":"শুধু অ্যাডমিন ডাটা আপলোড করতে পারেন।",
+ "Username must be 2-30 characters: letters, numbers, dot, dash or underscore.":"ইউজারনেম ২-৩০ অক্ষরের হতে হবে: ইংরেজি অক্ষর, সংখ্যা, ডট, ড্যাশ বা আন্ডারস্কোর।",
+ "Category column not found in the Sales sheet.":"Sales শীটে Category কলাম পাওয়া যায়নি।","User not found.":"ইউজার পাওয়া যায়নি।",
+ "NEW":"নতুন","YOU":"আপনি","No data":"কোনো ডাটা নেই","Unassigned":"নির্ধারিত নয়","THINNER":"থিনার","ADHESIVE":"অ্যাডহেসিভ","ZONE":"জোন","AREA":"এরিয়া",
+ "TOP 10 DISTRIBUTORS":"সেরা ১০ ডিস্ট্রিবিউটর","TOP 5 DISTRIBUTORS":"সেরা ৫ ডিস্ট্রিবিউটর","DISTRIBUTORS BY ZONE":"জোন অনুযায়ী ডিস্ট্রিবিউটর","DISTRIBUTORS BY AREA":"এরিয়া অনুযায়ী ডিস্ট্রিবিউটর",
+ "TOP 10 SALES OFFICERS":"সেরা ১০ সেলস অফিসার","SALES OFFICERS BY ZONE":"জোন অনুযায়ী সেলস অফিসার","SALES OFFICERS BY AREA":"এরিয়া অনুযায়ী সেলস অফিসার",
+ "Thailand Tour":"থাইল্যান্ড ট্যুর","Sri Lanka Tour":"শ্রীলঙ্কা ট্যুর","National Award Giving Ceremony":"জাতীয় পুরস্কার বিতরণ অনুষ্ঠান","⭐ YOUR RANK":"⭐ আপনার র‍্যাংক"
+};
+let LANG=CONFIG.LANG||"bn"; try{ LANG=localStorage.getItem("rk:lang")||LANG }catch(e){}
+const T=s=>(LANG==="bn"&&BN[s]!==undefined)?BN[s]:s;
+const B=(en,bn)=>LANG==="bn"?bn:en;
+const D=n=>LANG==="bn"?String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]):String(n);
+const tm=()=>new Date().toLocaleTimeString(LANG==="bn"?"bn-BD":[], {hour:"2-digit",minute:"2-digit"});
+function applyLang(){
+  document.documentElement.lang=LANG; document.body.classList.toggle("bn",LANG==="bn");
+  document.title=T("Khela Hobe")+" - Samuda Spec Chem Ltd.";
+  document.querySelectorAll("[data-i]").forEach(e=>{ if(e.dataset.en===undefined) e.dataset.en=e.textContent; e.textContent=T(e.dataset.en) });
+  document.querySelectorAll("[data-ip]").forEach(e=>{ if(e.dataset.en===undefined) e.dataset.en=e.getAttribute("placeholder"); e.setAttribute("placeholder",T(e.dataset.en)) });
+  document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
+  if(typeof setHelp==="function") setHelp();
+}
+function setLang(l){
+  $("menu").hidden=true;
+  if(l===LANG) return;
+  LANG=l; try{ localStorage.setItem("rk:lang",LANG) }catch(e){}
+  applyLang();
+  if(rows.length&&!$("main").hidden) render(false,false);
+}
+
 let rows = [], has = {zone:true, area:true}, per = "all";
 
 function parseCSV(t){
@@ -316,6 +391,7 @@ function ingest(j){
         cat: cat.includes("thinner")?"Thinner":cat.includes("adhesive")?"Adhesive":null,
         val:num(r[idx.value]), ts:d?new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime():0, month:d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`:"" };
     }).filter(r=>r.cat&&r.val);
+    teamHas={t:rows.some(r=>r.cat==="Thinner"),a:rows.some(r=>r.cat==="Adhesive")};
     // Employee ID = unique key for each Sales Officer; shown as "Name (ID)"
     const nm={}; rows.forEach(r=>{ if(r.soId&&r.so&&!nm[r.soId]) nm[r.soId]=r.so });
     rows.forEach(r=>{ if(r.soId) r.so=(nm[r.soId]||r.soId)+" ("+r.soId+")" });
@@ -329,7 +405,7 @@ function saveCache(j){            // lets the app open instantly next time (only
 function showNow(d,flip,intro){
   if(d.user) myId=norm(d.user);
   ingest(d); showMain(); setRole(d.role); saveCache(d); render(!!flip,!!intro);
-  $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  $("upd").textContent=T("Updated ")+tm();
 }
 let busy=false, chg=false, retryN=0, retryT=null;
 function scheduleRetry(){ if(retryN>=4) return; clearTimeout(retryT); retryN++; retryT=setTimeout(()=>load(true),4000*retryN) }
@@ -386,24 +462,24 @@ async function load(silent,anim,fresh){
     return;
   }
   busy=true; const t0=Date.now(); if(anim) run(true);
-  if(!silent) $("app").innerHTML='<div class="msg">Loading data…</div>';
+  if(!silent) $("app").innerHTML='<div class="msg">'+T("Loading data…")+'</div>';
   try{
     if(!CONFIG.API_URL||CONFIG.API_URL.startsWith("PASTE")) throw new Error("Set API_URL in index.html CONFIG.");
     const j=await api({action:"data",token:getToken(),fresh:!!fresh});
-    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin(T("Session expired. Please sign in again.")); return } throw new Error(j.error) }
     if(j.user) myId=norm(j.user);
     ingest(j); showMain(); setRole(j.role); saveCache(j);
     if(anim){ const w=500-(Date.now()-t0); if(w>0) await new Promise(r=>setTimeout(r,w)); run(false) }   // runner shows at least half a second
     render(!!silent,!!anim);
     retryN=0;
-    $("upd").textContent="Updated "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+    $("upd").textContent=T("Updated ")+tm();
   }catch(e){
     if(silent){
       const net=(e.name==="TypeError"||e.name==="AbortError");
-      $("upd").textContent=net?"Offline - retrying":"Update failed: "+String(e.message).slice(0,90);
+      $("upd").textContent=net?T("Offline - retrying"):T("Update failed: ")+T(String(e.message)).slice(0,90);
       scheduleRetry();
     }
-    else{ $("app").innerHTML=`<div class="msg err">${esc(e.message)}</div>`; $("upd").textContent="Error" }
+    else{ $("app").innerHTML=`<div class="msg err">${esc(T(e.message))}</div>`; $("upd").textContent=T("Error") }
   }finally{ busy=false; if(anim) run(false) }
 }
 
@@ -457,61 +533,62 @@ function row(cid,key,i,t,medal){
     const cur=t.full.indexOf(key)+1;
     if(t.prevFull){
       const pp=t.prevFull.indexOf(key)+1;
-      if(pp<=0){ ch='<span class="chg nw">NEW</span>'; if(t.changed) fl=" fu" }
+      if(pp<=0){ ch=`<span class="chg nw">${T("NEW")}</span>`; if(t.changed) fl=" fu" }
       else{ const d=pp-cur;
-        if(d>0){ ch=`<span class="chg up"><b>▲${d}</b><i>from #${pp}</i></span>`; if(t.changed) fl=" fu" }
-        else if(d<0){ ch=`<span class="chg dn"><b>▼${-d}</b><i>from #${pp}</i></span>`; if(t.changed) fl=" fd" } }
+        if(d>0){ ch=`<span class="chg up"><b>▲${D(d)}</b><i>${B("from #"+pp,"#"+D(pp)+" থেকে")}</i></span>`; if(t.changed) fl=" fu" }
+        else if(d<0){ ch=`<span class="chg dn"><b>▼${D(-d)}</b><i>${B("from #"+pp,"#"+D(pp)+" থেকে")}</i></span>`; if(t.changed) fl=" fd" } }
     }
   }else if(t.prev){
     const p=t.prev.indexOf(key);
-    if(p<0){ ch='<span class="chg nw">NEW</span>'; if(t.changed) fl=" fu" }
+    if(p<0){ ch=`<span class="chg nw">${T("NEW")}</span>`; if(t.changed) fl=" fu" }
     else{ const d=p-i;
-      if(d>0){ ch=`<span class="chg up">▲${d}</span>`; if(t.changed) fl=" fu" }
-      else if(d<0){ ch=`<span class="chg dn">▼${-d}</span>`; if(t.changed) fl=" fd" } }
+      if(d>0){ ch=`<span class="chg up">▲${D(d)}</span>`; if(t.changed) fl=" fu" }
+      else if(d<0){ ch=`<span class="chg dn">▼${D(-d)}</span>`; if(t.changed) fl=" fd" } }
   }
   const tri=fl?`<span class="tri ${fl.indexOf("fu")>=0?"u":"d"}">${fl.indexOf("fu")>=0?"▲":"▼"}</span>`:"";
   const mine=!!(myId&&id&&id.toUpperCase()===myId);
   const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
-  return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${i+1}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}<span class="nt">${esc(nm.replace(/\s*\((adhesive|thinner)\)\s*$/i,""))}</span>${mine?'<span class="you">YOU</span>':""}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+  return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${D(i+1)}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}<span class="nt">${esc(nm.replace(/\s*\((adhesive|thinner)\)\s*$/i,""))}</span>${mine?'<span class="you">'+T("YOU")+'</span>':""}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
 const TRK={}, FULLBY={}, PREVBY={};
 function meBox(FT,FA){                              // "YOUR RANK" box for a distributor who logged in with his distributor code
   if(!myId) return "";
   let name="";
   const one=(F,cls,label)=>{
-    if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
+    if(noTeam(cls)) return "";
     const k=F.find(x=>{ const m=x.match(/\(([^()]+)\)$/); return m&&m[1].toUpperCase()===myId }); if(!k) return "";
-    name=k.replace(/ \([^()]*\)$/,"");
+    name=k.replace(/ \([^()]*\)$/,"").replace(/\s*\((adhesive|thinner)\)\s*$/i,"");
     const r=F.indexOf(k)+1, t=TRK[cls]; let mv="";
-    if(t&&t.prevFull){ const pp=t.prevFull.indexOf(k)+1; if(pp>0&&pp!==r) mv=pp>r?`<b class="u">▲${pp-r}</b>`:`<b class="d">▼${r-pp}</b>` }
-    return `<div class="mc ${cls}"><span class="cat">${label}</span><span class="rk">#${r}</span><span class="of">of ${F.length}</span>${mv}</div>`;
+    if(t&&t.prevFull){ const pp=t.prevFull.indexOf(k)+1; if(pp>0&&pp!==r) mv=pp>r?`<b class="u">▲${D(pp-r)}</b>`:`<b class="d">▼${D(r-pp)}</b>` }
+    return `<div class="mc ${cls}"><span class="cat">${T(label)}</span><span class="rk">#${D(r)}</span><span class="of">${B("of "+F.length,"মোট "+D(F.length)+" এর মধ্যে")}</span>${mv}</div>`;
   };
   const a=one(FT,"t","THINNER"), b=one(FA,"a","ADHESIVE");
   if(!a&&!b) return "";
-  return `<div class="meb"><div class="mt">⭐ YOUR RANK</div><div class="mn">${esc(name)} · <b>${esc(myId)}</b></div><div class="mrs">${a}${b}</div></div>`;
+  return `<div class="meb"><div class="mt">${T("⭐ YOUR RANK")}</div><div class="mn">${esc(name)} · <b>${esc(myId)}</b></div><div class="mrs">${a}${b}</div></div>`;
 }
+function noTeam(cls){ return (cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")||(userRole==="distributor"&&teamHas.t!==teamHas.a&&((cls==="t"&&!teamHas.t)||(cls==="a"&&!teamHas.a))) }
 function fCard(cls,cat,sub,list,cid,bd,medal,full){
-  if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
+  if(noTeam(cls)) return "";
   cid=per+":"+cid;
   const keys=list.map(e=>e[0]), t=track(cid,keys,full);
   if(full){ TRK[cls]=t; FULLBY[cid]=t.full; PREVBY[cid]=t.prevFull }
-  const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">No data</div>';
-  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
+  const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">'+T("No data")+'</div>';
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${T(cat)}</span>${T(sub)}</div>${bd||""}${body}</div>`;
 }
 function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
-  if((cls==="t"&&userRole==="viewer_adhesive")||(cls==="a"&&userRole==="viewer_thinner")) return "";
+  if(noTeam(cls)) return "";
   let body;
-  if(!ok) body=`<div class="msg err">Column "${colName}" not found in sheet</div>`;
-  else if(!groups.length) body='<div class="msg">No data</div>';
+  if(!ok) body=`<div class="msg err">${B(`Column "${colName}" not found in sheet`,`শীটে "${colName}" কলাম পাওয়া যায়নি`)}</div>`;
+  else if(!groups.length) body='<div class="msg">'+T("No data")+'</div>';
   else body=groups.map(([gn,list])=>{
     const id=per+":"+cid+":"+gn, t=track(id,list.map(e=>e[0]));
-    return `<div class="gh">${lbl} · ${esc(gn)}</div>`+list.map((e,i)=>row(id,e[0],i,t)).join("");
+    return `<div class="gh">${T(lbl)} · ${esc(T(gn))}</div>`+list.map((e,i)=>row(id,e[0],i,t)).join("");
   }).join("");
-  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${cat}</span>${sub}</div>${bd||""}${body}</div>`;
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${T(cat)}</span>${T(sub)}</div>${bd||""}${body}</div>`;
 }
-const prizeBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST)} 🇹🇭</div>`;
-const tourBox=()=>`<div class="prize">🏆 PRIZE · ${esc(CONFIG.PRIZE_DIST5)} 🇱🇰</div><div class="note">Top 10 not repeated · "from" = overall position before</div>`;
-const cerBox=()=>`<div class="prize cer">🎖 ATTEND · ${esc(CONFIG.CEREMONY)}</div>`;
+const prizeBox=()=>`<div class="prize">🏆 ${B("PRIZE","পুরস্কার")} · ${esc(T(CONFIG.PRIZE_DIST))} 🇹🇭</div>`;
+const tourBox=()=>`<div class="prize">🏆 ${B("PRIZE","পুরস্কার")} · ${esc(T(CONFIG.PRIZE_DIST5))} 🇱🇰</div><div class="note">${B('Top 10 not repeated · "from" = overall position before','সেরা ১০ এখানে নেই · "থেকে" = আগের সামগ্রিক অবস্থান')}</div>`;
+const cerBox=()=>`<div class="prize cer">🎖 ${B("ATTEND","অংশগ্রহণ")} · ${esc(T(CONFIG.CEREMONY))}</div>`;
 function render(flip,intro){
   const m=per, old={}, oldHtml={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top; oldHtml[e.dataset.k]=e.outerHTML });
@@ -528,7 +605,7 @@ function render(flip,intro){
    (CONFIG.SHOW_SALES_OFFICERS?(
     fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",cerBox(),1,FTS)+
     fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",cerBox(),1,FAS)):"")):"";
-  const nz='<div class="note">1st &amp; 2nd of each zone · Top 10 not repeated</div>', na='<div class="note">1st &amp; 2nd of each area · Top 10 not repeated</div>';
+  const nz='<div class="note">'+B('1st &amp; 2nd of each zone · Top 10 not repeated','প্রতি জোনের ১ম ও ২য় · সেরা ১০ বাদে')+'</div>', na='<div class="note">'+B('1st &amp; 2nd of each area · Top 10 not repeated','প্রতি এরিয়ার ১ম ও ২য় · সেরা ১০ বাদে')+'</div>';
   const zoneCards=CONFIG.SHOW_ZONE_AREA?(
    gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m,keys(tD)),has.zone,"Zone","tdz","ZONE",nz)+
    (CONFIG.SHOW_SALES_OFFICERS?gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m,keys(tS)),has.zone,"Zone","tsz","ZONE",nz):"")+
@@ -540,8 +617,8 @@ function render(flip,intro){
   if(!meta) meta={cur:Date.now(),prev:null};
   else if(chg) meta={cur:Date.now(),prev:meta.cur};
   try{ localStorage.setItem("rk:meta",JSON.stringify(meta)) }catch(e){}
-  const fm=t=>new Date(t).toLocaleString([], {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
-  $("cmp").innerHTML=meta.prev?`Previous update <b>${fm(meta.prev)}</b> → Current update <b>${fm(meta.cur)}</b>`:`Current update <b>${fm(meta.cur)}</b>`;
+  const fm=t=>new Date(t).toLocaleString(LANG==="bn"?"bn-BD":[], {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+  $("cmp").innerHTML=meta.prev?`${B("Previous update","আগের আপডেট")} <b>${fm(meta.prev)}</b> → ${B("Current update","বর্তমান আপডেট")} <b>${fm(meta.cur)}</b>`:`${B("Current update","বর্তমান আপডেট")} <b>${fm(meta.cur)}</b>`;
   // ---- rank changes: one place at a time ----
   const stepDone=new Set();
   function stepAnimate(){
@@ -586,7 +663,7 @@ function render(flip,intro){
           card.appendChild(el);
           const r1=FL.indexOf(label)+1, r0=(PV?PV.indexOf(label)+1:0)||parseInt(ps&&ps.textContent,10)||1;
           let num=r0;
-          const setNum=n=>{ if(ps) ps.textContent=n; if(cg){ cg.className="chg dn"; cg.innerHTML=`<b>▼${Math.max(1,n-r0)}</b><i>to #${r1||n}</i>` } };
+          const setNum=n=>{ if(ps) ps.textContent=D(n); if(cg){ cg.className="chg dn"; cg.innerHTML=`<b>▼${D(Math.max(1,n-r0))}</b><i>${B("to #"+(r1||n),"#"+D(r1||n)+" এ")}</i>` } };
           setNum(r0);
           let lastMove=-1;
           for(let s2=0;s2<S;s2++) if(pos[s2+1][k]!==pos[s2][k]){
@@ -637,7 +714,7 @@ function render(flip,intro){
     });
   }
 }
-$("ref").onclick=()=>{ $("upd").textContent="Refreshing…"; load(true,true,true) };
+$("ref").onclick=()=>{ $("upd").textContent=T("Refreshing…"); load(true,true,true) };
 /* ---- auth ---- */
 async function api(body){
   const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),30000);       // never hang forever
@@ -645,18 +722,18 @@ async function api(body){
     const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body),signal:ctl.signal});
     const t=await r.text();
     try{ return JSON.parse(t) }
-    catch(_){ throw new Error("Server sent an unexpected reply - check the Apps Script deployment (New version, access: Anyone).") }
+    catch(_){ throw new Error(T("Server sent an unexpected reply - check the Apps Script deployment (New version, access: Anyone).")) }
   }finally{ clearTimeout(to) }
 }
 const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
 const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk");try{localStorage.removeItem("rk:data")}catch(e){}};
 function showLogin(msg){ $("main").hidden=true; $("login").hidden=false; $("lerr").textContent=msg||""; $("lp").value="" }
-let userRole="viewer", myId="";
+let userRole="viewer", myId="", teamHas={t:true,a:true};
 function setRole(r){ userRole=r||"viewer"; $("upb").hidden=r!=="admin"; $("aub").hidden=r!=="admin" }
 function openPanel(id){ ["dash","uppanel","pwpanel","aupanel"].forEach(x=>$(x).hidden=x!==id); $("menu").hidden=true }
 function showMain(){ $("login").hidden=true; $("main").hidden=false; openPanel("dash") }
 $("lf").onsubmit=async e=>{
-  e.preventDefault(); const b=$("lb"); b.disabled=true; b.textContent="Signing in…"; $("lerr").textContent="";
+  e.preventDefault(); const b=$("lb"); b.disabled=true; b.textContent=T("Signing in…"); $("lerr").textContent="";
   try{
     if(!CONFIG.API_URL||CONFIG.API_URL.startsWith("PASTE")) throw new Error("Set API_URL in index.html CONFIG.");
     const j=await api({action:"login",username:$("lu").value,password:$("lp").value});
@@ -665,13 +742,16 @@ $("lf").onsubmit=async e=>{
     $("lp").value="";
     if(j.sales) showNow({header:j.sales.header,rows:j.sales.rows,role:j.role,user:j.user||$("lu").value},false,true);   // fast path: data came with login
     else load(false,true);                                                                // older backend: fetch separately
-  }catch(err){ $("lerr").textContent=err.message }
-  b.disabled=false; b.textContent="Sign in";
+  }catch(err){ $("lerr").textContent=T(err.message) }
+  b.disabled=false; b.textContent=T("Sign in");
 };
 $("out").onclick=async()=>{ const t=getToken(); clearToken(); rows=[]; showLogin(); try{await api({action:"logout",token:t})}catch(_){} };
 /* ---- upload (admin) ---- */
 let up={header:null,rows:[]};
-$("uphelp").textContent="First row must have these headings: "+Object.values(CONFIG.COL).join(", ")+" (Zone and Area are optional). Employee ID must be unique for each Sales Officer. File: .csv or .xlsx";
+function setHelp(){ const cols=Object.values(CONFIG.COL).join(", ");
+  $("uphelp").textContent=B("First row must have these headings: "+cols+" (Zone and Area are optional). Employee ID must be unique for each Sales Officer. File: .csv or .xlsx",
+    "প্রথম সারিতে এই হেডিংগুলো থাকতে হবে: "+cols+" (জোন ও এরিয়া ঐচ্ছিক)। প্রতিটি সেলস অফিসারের এমপ্লয়ি আইডি আলাদা হতে হবে। ফাইল: .csv বা .xlsx") }
+setHelp();
 $("upb").onclick=()=>{ openPanel("uppanel"); $("upmsg").textContent="" };
 $("upback").onclick=()=>openPanel("dash");
 function loadXLSX(){
@@ -684,7 +764,7 @@ function loadXLSX(){
 }
 $("upfile").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
-  $("upmsg").textContent="Reading file…"; $("upgo").disabled=true;
+  $("upmsg").textContent=T("Reading file…"); $("upgo").disabled=true;
   try{
     let data;
     if(/\.csv$/i.test(f.name)) data=parseCSV((await f.text()).replace(/^\uFEFF/,""));
@@ -694,12 +774,12 @@ $("upfile").onchange=async e=>{
       data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,dateNF:"dd/mm/yyyy",defval:""});
     }
     data=data.filter(r=>r.some(c=>String(c).trim()!==""));
-    if(data.length<2) throw new Error("The file has no data rows.");
+    if(data.length<2) throw new Error(T("The file has no data rows."));
     const header=data[0].map(h=>String(h).trim());
     const low=header.map(h=>h.toLowerCase());
     const need=["date","distributor","distCode","officer","empId","category","value"].map(k=>CONFIG.COL[k]);
     const miss=need.filter(n=>!low.includes(n.toLowerCase()));
-    if(miss.length) throw new Error("Missing column(s): "+miss.join(", ")+". Found: "+header.join(", "));
+    if(miss.length) throw new Error(B("Missing column(s): "+miss.join(", ")+". Found: "+header.join(", "),"কলাম পাওয়া যায়নি: "+miss.join(", ")+"। ফাইলে আছে: "+header.join(", ")));
     const vi=low.indexOf(CONFIG.COL.value.toLowerCase()), ci=low.indexOf(CONFIG.COL.category.toLowerCase());
     const ei=low.indexOf(CONFIG.COL.empId.toLowerCase()), di=low.indexOf(CONFIG.COL.distCode.toLowerCase());
     const dti=low.indexOf(CONFIG.COL.date.toLowerCase()), ni=low.indexOf(CONFIG.COL.officer.toLowerCase()), dni=low.indexOf(CONFIG.COL.distributor.toLowerCase());
@@ -718,33 +798,33 @@ $("upfile").onchange=async e=>{
     });
     const multi=o=>Object.values(o).filter(x=>x.size>1).length;
     const w=[];
-    if(bad) w.push(bad+" rows have a Category that is not Thinner/Adhesive (not ranked)");
-    if(noDist) w.push(noDist+" rows have no Distributor Code");
-    if(noEmp) w.push(noEmp+" rows have no Employee ID");
-    if(zero) w.push(zero+" rows have a zero or unreadable Sales Value");
-    if(badDate) w.push(badDate+" rows have a Date the app cannot read (use dd/mm/yyyy)");
-    if(multi(dnames)) w.push(multi(dnames)+" Distributor Codes have more than one name (first name is shown)");
-    if(multi(enames)) w.push(multi(enames)+" Employee IDs have more than one name (first name is shown)");
+    if(bad) w.push(B(bad+" rows have a Category that is not Thinner/Adhesive (not ranked)",D(bad)+"টি সারিতে Category থিনার/অ্যাডহেসিভ নয় (র‍্যাংকে ধরা হবে না)"));
+    if(noDist) w.push(B(noDist+" rows have no Distributor Code",D(noDist)+"টি সারিতে ডিস্ট্রিবিউটর কোড নেই"));
+    if(noEmp) w.push(B(noEmp+" rows have no Employee ID",D(noEmp)+"টি সারিতে এমপ্লয়ি আইডি নেই"));
+    if(zero) w.push(B(zero+" rows have a zero or unreadable Sales Value",D(zero)+"টি সারিতে বিক্রয় মূল্য শূন্য বা পড়া যাচ্ছে না"));
+    if(badDate) w.push(B(badDate+" rows have a Date the app cannot read (use dd/mm/yyyy)",D(badDate)+"টি সারির তারিখ পড়া যাচ্ছে না (dd/mm/yyyy লিখুন)"));
+    if(multi(dnames)) w.push(B(multi(dnames)+" Distributor Codes have more than one name (first name is shown)",D(multi(dnames))+"টি ডিস্ট্রিবিউটর কোডে একাধিক নাম আছে (প্রথম নামটি দেখানো হবে)"));
+    if(multi(enames)) w.push(B(multi(enames)+" Employee IDs have more than one name (first name is shown)",D(multi(enames))+"টি এমপ্লয়ি আইডিতে একাধিক নাম আছে (প্রথম নামটি দেখানো হবে)"));
     up={header,rows:rows2};
-    $("upmsg").innerHTML="✔ "+rows2.length+" rows ready. Total Sales Value: "+fmt(total)+"<br>Check this total against your file."+w.map(x=>"<br>⚠ "+esc(x)).join("");
+    $("upmsg").innerHTML=B("✔ "+rows2.length+" rows ready. Total Sales Value: "+fmt(total)+"<br>Check this total against your file.","✔ "+D(rows2.length)+"টি সারি প্রস্তুত। মোট বিক্রয় মূল্য: "+D(fmt(total))+"<br>এই মোট আপনার ফাইলের সাথে মিলিয়ে নিন।")+w.map(x=>"<br>⚠ "+esc(x)).join("");
     $("upgo").disabled=false;
-  }catch(err){ up={header:null,rows:[]}; $("upmsg").innerHTML='<span class="err">'+esc(err.message)+'</span>' }
+  }catch(err){ up={header:null,rows:[]}; $("upmsg").innerHTML='<span class="err">'+esc(T(err.message))+'</span>' }
 };
 $("upgo").onclick=async()=>{
   const mode=document.querySelector('input[name=upmode]:checked').value;
-  if(mode==="replace" && !confirm("This will DELETE all existing sales data and replace it with this file. Continue?")) return;
+  if(mode==="replace" && !confirm(T("This will DELETE all existing sales data and replace it with this file. Continue?"))) return;
   const btn=$("upgo"); btn.disabled=true;
   try{
     const N=1500, total=up.rows.length, tk=getToken();
     for(let i=0;i<total;i+=N){
-      $("upmsg").textContent="Uploading "+Math.min(i+N,total)+" / "+total+" …";
+      $("upmsg").textContent=B("Uploading "+Math.min(i+N,total)+" / "+total+" …","আপলোড হচ্ছে "+D(Math.min(i+N,total))+" / "+D(total)+" …");
       const j=await api({action:"upload",token:tk,mode,first:i===0,header:up.header,rows:up.rows.slice(i,i+N),dateCol:CONFIG.COL.date});
-      if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+      if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin(T("Session expired. Please sign in again.")); return } throw new Error(j.error) }
     }
     up={header:null,rows:[]}; $("upfile").value="";
     await load(true,true,true);
-    $("upd").textContent="Uploaded "+total+" rows ✔";
-  }catch(err){ $("upmsg").innerHTML='<span class="err">'+esc(err.message)+'</span>'; btn.disabled=false }
+    $("upd").textContent=B("Uploaded "+total+" rows ✔",D(total)+"টি সারি আপলোড হয়েছে ✔");
+  }catch(err){ $("upmsg").innerHTML='<span class="err">'+esc(T(err.message))+'</span>'; btn.disabled=false }
 };
 
 /* ---- preview: shows the one-by-one rank climb on screen, without touching your real data ---- */
@@ -752,7 +832,7 @@ let demoBusy=false;
 function demoRank(){
   $("menu").hidden=true; openPanel("dash");
   if(demoBusy) return;
-  if(!rows.length){ $("upd").textContent="No data to preview"; return }
+  if(!rows.length){ $("upd").textContent=T("No data to preview"); return }
   const pvT=PREVBY[per+":td"], pvA=PREVBY[per+":ad"];
   if(!pvT&&!pvA){ sampleDemo(); return }
   demoBusy=true;
@@ -765,12 +845,12 @@ function demoRank(){
   };
   setOrder("Thinner",pvT); setOrder("Adhesive",pvA);
   NOTRACK=true; window.scrollTo(0,0); render(false,false);
-  $("upd").textContent="Preview: previous ranking…";
+  $("upd").textContent=T("Preview: previous ranking…");
   setTimeout(()=>{                                       // now play the real change: previous -> current ranking
     rows.forEach((r,i)=>{ r.val=saved[i] }); NOTRACK=false;
     render(true,false);
-    $("upd").textContent="Preview: replaying the last ranking change";
-    setTimeout(()=>{ demoBusy=false; $("upd").textContent="Preview finished" },13000);
+    $("upd").textContent=T("Preview: replaying the last ranking change");
+    setTimeout(()=>{ demoBusy=false; $("upd").textContent=T("Preview finished") },13000);
   },1800);
 }
 function sampleDemo(){                                   // no earlier ranking saved yet: show a sample climb instead
@@ -783,13 +863,14 @@ function sampleDemo(){                                   // no earlier ranking s
     const from=Math.min(7,L.length-1), to=2, r=rows.find(x=>x.cat===cat&&x.dist===L[from][0]);
     if(r){ r.val+=L[to][1]+1-L[from][1]; done++ }
   });
-  if(!done){ demoBusy=false; $("upd").textContent="Preview needs at least 4 dealers"; return }
+  if(!done){ demoBusy=false; $("upd").textContent=T("Preview needs at least 4 dealers"); return }
   window.scrollTo(0,0); render(true,false);
-  $("upd").textContent="No earlier ranking yet - sample: a dealer climbs to 3rd";
+  $("upd").textContent=T("No earlier ranking yet - sample: a dealer climbs to 3rd");
   setTimeout(()=>{ rows.forEach((r,i)=>{ r.val=saved[i] }); try{ Object.keys(bk).forEach(k=>localStorage.setItem(k,bk[k])) }catch(e){}
-    render(false,false); demoBusy=false; $("upd").textContent="Preview finished" },11000);
+    render(false,false); demoBusy=false; $("upd").textContent=T("Preview finished") },11000);
 }
 $("demob").onclick=demoRank;
+document.querySelectorAll("[data-lang]").forEach(b=>{ b.onclick=e=>{ e.stopPropagation(); setLang(b.dataset.lang) } });
 
 /* ---- menu + add user ---- */
 $("mbtn").onclick=e=>{ e.stopPropagation(); $("menu").hidden=!$("menu").hidden };
@@ -806,8 +887,8 @@ function showDistList(){
   const q=$("au_q").value.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const hit=distList.filter(d=>{ const t=(d.code+" "+d.name).toLowerCase(); return q.every(w=>t.indexOf(w)>=0) });
   const cap=hit.slice(0,60);
-  $("au_list").innerHTML=`<div class="cnt">${hit.length} of ${distList.length} distributors${hit.length>60?" - type more to narrow the list":""}</div>`+
-    cap.map(d=>`<button type="button" data-c="${esc(d.code)}" data-n="${esc(d.name)}"><b>${esc(d.code)}</b> · ${esc(d.name)}</button>`).join("")+(hit.length?"":'<div class="cnt">No distributor found</div>');
+  $("au_list").innerHTML=`<div class="cnt">${B(hit.length+" of "+distList.length+" distributors"+(hit.length>60?" - type more to narrow the list":""),D(distList.length)+" জনের মধ্যে "+D(hit.length)+" জন"+(hit.length>60?" - আরও লিখে তালিকা ছোট করুন":""))}</div>`+
+    cap.map(d=>`<button type="button" data-c="${esc(d.code)}" data-n="${esc(d.name)}"><b>${esc(d.code)}</b> · ${esc(d.name)}</button>`).join("")+(hit.length?"":`<div class="cnt">${T("No distributor found")}</div>`);
   $("au_list").hidden=false;
 }
 $("au_q").oninput=showDistList;
@@ -816,24 +897,27 @@ $("au_list").onclick=e=>{                                   // tap a distributor
   const b=e.target.closest("button"); if(!b) return;
   $("au_user").value=b.dataset.c.toLowerCase(); $("au_name").value=b.dataset.n;
   $("au_q").value=b.dataset.c+" · "+b.dataset.n; $("au_list").hidden=true;
+  const cats={}; rows.forEach(r=>{ if(r.dCode===b.dataset.c.toUpperCase()) cats[r.cat]=1 });
+  const th=!!cats.Thinner, ad=!!cats.Adhesive;
+  $("au_team").textContent=th&&!ad?B("👥 Team: Thinner - will see the Thinner dashboard only","👥 টিম: থিনার - শুধু থিনার ড্যাশবোর্ড দেখবে"):ad&&!th?B("👥 Team: Adhesive - will see the Adhesive dashboard only","👥 টিম: অ্যাডহেসিভ - শুধু অ্যাডহেসিভ ড্যাশবোর্ড দেখবে"):B("👥 Team: Thinner & Adhesive - will see both dashboards","👥 টিম: থিনার ও অ্যাডহেসিভ - দুটি ড্যাশবোর্ডই দেখবে");
 };
 $("au_role").onchange=()=>{
   const d=$("au_role").value==="distributor";
-  $("au_pick").hidden=!d; $("au_user").readOnly=d; $("au_name").readOnly=d; $("au_q").value=""; $("au_list").hidden=true;
-  if(d){ buildDistList(); $("au_user").placeholder="Login ID = distributor code (auto)"; showDistList() } else { $("au_user").placeholder="Username (e.g. rahim01)" }
+  $("au_pick").hidden=!d; $("au_user").readOnly=d; $("au_name").readOnly=d; $("au_q").value=""; $("au_list").hidden=true; $("au_team").textContent="";
+  if(d){ buildDistList(); $("au_user").placeholder=T("Login ID = distributor code (auto)"); showDistList() } else { $("au_user").placeholder=T("Username (e.g. rahim01)") }
 };
 $("auf").onsubmit=async e=>{
   e.preventDefault();
   const m=$("aumsg"), b=$("augo"), pw=$("au_pass").value;
-  if($("au_role").value==="distributor"&&!$("au_user").value){ m.innerHTML='<span class="err">Choose the distributor first.</span>'; return }
-  if(pw.length<6){ m.innerHTML='<span class="err">Password must be at least 6 characters.</span>'; return }
-  b.disabled=true; m.textContent="Saving…";
+  if($("au_role").value==="distributor"&&!$("au_user").value){ m.innerHTML='<span class="err">'+T("Choose the distributor first.")+'</span>'; return }
+  if(pw.length<6){ m.innerHTML='<span class="err">'+T("Password must be at least 6 characters.")+'</span>'; return }
+  b.disabled=true; m.textContent=T("Saving…");
   try{
     const j=await api({action:"adduser",token:getToken(),name:$("au_name").value,username:$("au_user").value,password:pw,role:$("au_role").value});
-    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
-    m.textContent="✔ User added: "+$("au_user").value.trim().toLowerCase();
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin(T("Session expired. Please sign in again.")); return } throw new Error(j.error) }
+    m.textContent=B("✔ User added: ","✔ ইউজার যোগ হয়েছে: ")+$("au_user").value.trim().toLowerCase();
     $("au_name").value=""; $("au_user").value=""; $("au_pass").value=""; $("au_role").value="viewer"; $("au_role").onchange();
-  }catch(err){ m.innerHTML='<span class="err">'+esc(err.message)+'</span>' }
+  }catch(err){ m.innerHTML='<span class="err">'+esc(T(err.message))+'</span>' }
   b.disabled=false;
 };
 
@@ -843,15 +927,15 @@ $("pwback").onclick=()=>openPanel("dash");
 $("pwf").onsubmit=async e=>{
   e.preventDefault();
   const o=$("pw0").value, n=$("pw1").value, c=$("pw2").value, m=$("pwmsg"), b=$("pwgo");
-  if(n.length<6){ m.innerHTML='<span class="err">New password must be at least 6 characters.</span>'; return }
-  if(n!==c){ m.innerHTML='<span class="err">New passwords do not match.</span>'; return }
-  b.disabled=true; m.textContent="Saving…";
+  if(n.length<6){ m.innerHTML='<span class="err">'+T("New password must be at least 6 characters.")+'</span>'; return }
+  if(n!==c){ m.innerHTML='<span class="err">'+T("New passwords do not match.")+'</span>'; return }
+  b.disabled=true; m.textContent=T("Saving…");
   try{
     const j=await api({action:"changepw",token:getToken(),oldPassword:o,newPassword:n});
-    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin("Session expired. Please sign in again."); return } throw new Error(j.error) }
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin(T("Session expired. Please sign in again.")); return } throw new Error(j.error) }
     $("pw0").value=""; $("pw1").value=""; $("pw2").value="";
-    m.textContent="✔ Password changed. Use the new password next time you sign in.";
-  }catch(err){ m.innerHTML='<span class="err">'+esc(err.message)+'</span>' }
+    m.textContent=B("✔ Password changed. Use the new password next time you sign in.","✔ পাসওয়ার্ড বদলানো হয়েছে। পরেরবার নতুন পাসওয়ার্ড দিয়ে সাইন ইন করুন।");
+  }catch(err){ m.innerHTML='<span class="err">'+esc(T(err.message))+'</span>' }
   b.disabled=false;
 };
 
@@ -860,10 +944,11 @@ window.addEventListener("online",()=>{ if(getToken()&&!$("main").hidden) load(tr
 setInterval(()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) },60000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) });
 
+applyLang();
 (function boot(){
   if(!getToken()){ showLogin(); return }
   let c=null; try{ c=JSON.parse(localStorage.getItem("rk:data")||"null") }catch(e){}
-  if(c&&c.rows){ try{ showNow(c,false,true); $("upd").textContent="Updating…"; load(true); return }catch(e){} }
+  if(c&&c.rows){ try{ showNow(c,false,true); $("upd").textContent=T("Updating…"); load(true); return }catch(e){} }
   load(false,true);
 })();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
