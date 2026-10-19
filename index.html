@@ -181,6 +181,12 @@ body.bn .cat,body.bn .gh,body.bn .prize{line-height:1.4}
 #menu .langrow button.on,.langrow2 button.on{background:#e10600;border-color:#e10600;color:#fff;font-weight:800}
 .langrow2{display:flex;gap:8px;justify-content:center;margin-top:16px}
 .langrow2 button{min-width:96px;padding:8px 14px;border:1px solid #3a3a52;border-radius:6px;background:#12121c;color:#fff;font-size:14px}
+.rw.mine{position:relative;overflow:visible}
+.rw.mine::before,.rw.mine::after{position:absolute;top:50%;font-size:15px;line-height:1;color:#00e5ff;text-shadow:0 0 8px #00e5ff;z-index:6;pointer-events:none}
+.rw.mine::before{content:"▶";left:-13px;animation:nudgeL 1s ease-in-out infinite alternate}
+.rw.mine::after{content:"◀";right:-13px;animation:nudgeR 1s ease-in-out infinite alternate}
+@keyframes nudgeL{from{transform:translate(0,-50%)}to{transform:translate(4px,-50%)}}
+@keyframes nudgeR{from{transform:translate(0,-50%)}to{transform:translate(-4px,-50%)}}
 </style>
 </head>
 <body>
@@ -548,7 +554,7 @@ function row(cid,key,i,t,medal){
   const tri=fl?`<span class="tri ${fl.indexOf("fu")>=0?"u":"d"}">${fl.indexOf("fu")>=0?"▲":"▼"}</span>`:"";
   const mine=!!(myId&&id&&id.toUpperCase()===myId);
   const mc=(medal&&i<3)?" m"+(i+1):"", me=mc?`<span class="md">${["🥇","🥈","🥉"][i]}</span>`:"";
-  return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${D(i+1)}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}<span class="nt">${esc(nm.replace(/\s*\((adhesive|thinner)\)\s*$/i,""))}</span>${mine?'<span class="you">'+T("YOU")+'</span>':""}</span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
+  return `<div class="rw${fl}${mc}${mine?" mine":""}" data-k="${esc(cid+"|"+key)}"><span class="pos${i<3?" p"+(i+1):""}">${D(i+1)}</span><span class="stripe" style="background:${hue(key)}"></span><span class="nm">${tri}${me}<span class="nt">${esc(nm.replace(/\s*\((adhesive|thinner)\)\s*$/i,""))}</span></span>${id?`<span class="tag">${esc(id)}</span>`:""}${ch}</div>`;
 }
 const TRK={}, FULLBY={}, PREVBY={};
 function meBox(FT,FA){                              // "YOUR RANK" box for a distributor who logged in with his distributor code
