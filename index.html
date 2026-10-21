@@ -85,7 +85,24 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 #menu button{display:block;width:100%;text-align:left;background:transparent;border:0;border-radius:6px;padding:12px;font-size:14px;color:#fff;white-space:nowrap}
 #menu button[hidden]{display:none}
 #menu button:active{background:#2a2a3a}
-#menu #out{color:#ff6b6b;border-top:1px solid #33334a;border-radius:0 0 6px 6px;margin-top:4px}
+#menu .lobtn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:calc(100% - 8px);margin:8px 4px 2px;padding:8px 14px;border-radius:8px;background:#f4f7ff;color:#1f2335;font-weight:600;font-size:15px;border:0}
+#menu .lobtn:active{background:#e3e8fa}
+.lo{overflow:visible;display:block}
+.lo .door{transform-origin:37px 16px}
+.lo .leg{transform-origin:8.5px 19px}.lo .arm{transform-origin:10px 13.5px}
+.lobtn.go .door{animation:doorO 1.15s ease-in-out forwards}
+.lobtn.go .person{animation:runIn 1.15s ease-in forwards}
+.lobtn.go .l1{animation:legA .17s ease-in-out infinite alternate}.lobtn.go .l2{animation:legA .17s ease-in-out infinite alternate-reverse}
+.lobtn.go .a1{animation:legA .17s ease-in-out infinite alternate-reverse}.lobtn.go .a2{animation:legA .17s ease-in-out infinite alternate}
+@media (hover:hover){
+ .lobtn:hover .door{animation:doorO 1.15s ease-in-out infinite}
+ .lobtn:hover .person{animation:runIn 1.15s ease-in infinite}
+ .lobtn:hover .l1{animation:legA .17s ease-in-out infinite alternate}.lobtn:hover .l2{animation:legA .17s ease-in-out infinite alternate-reverse}
+ .lobtn:hover .a1{animation:legA .17s ease-in-out infinite alternate-reverse}.lobtn:hover .a2{animation:legA .17s ease-in-out infinite alternate}
+}
+@keyframes doorO{0%{transform:scaleX(1)}22%{transform:scaleX(.22)}72%{transform:scaleX(.22)}100%{transform:scaleX(1)}}
+@keyframes runIn{0%{transform:translateX(0);opacity:1}55%{transform:translateX(13px);opacity:1}72%{transform:translateX(20px);opacity:0}100%{transform:translateX(20px);opacity:0}}
+@keyframes legA{from{transform:rotate(-32deg)}to{transform:rotate(32deg)}}
 #aupanel input,#aupanel select{width:100%;font:inherit;padding:11px;margin:5px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
 #augo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
 #augo:disabled{opacity:.45}
@@ -187,6 +204,24 @@ body.bn .cat,body.bn .gh,body.bn .prize{line-height:1.4}
 .rw.mine::after{content:"◀";right:-13px;animation:nudgeR 1s ease-in-out infinite alternate}
 @keyframes nudgeL{from{transform:translate(0,-50%)}to{transform:translate(4px,-50%)}}
 @keyframes nudgeR{from{transform:translate(0,-50%)}to{transform:translate(-4px,-50%)}}
+#swpanel input[type=file]{width:100%;margin:10px 0;font:inherit}
+#swpanel input[type=text],#swpanel input[type=number],#swpanel textarea{width:100%;font:inherit;padding:11px;margin:5px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
+#swgo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
+#swgo:disabled{opacity:.45}
+#updpop{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1001;background:rgba(5,5,12,.97);display:flex;align-items:center;justify-content:center;padding:18px}
+#updpop[hidden]{display:none}
+#updpop .box{width:100%;max-width:360px;background:#1e1e2a;border-radius:14px;border-top:4px solid #e10600;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.7)}
+#updpop h3{margin:0 0 4px;font-size:18px}
+#updpop .vv{color:#9ec5ff;font-size:13px;margin-bottom:10px}
+#updpop .nt{white-space:pre-wrap;font-size:14px;margin:6px 0 14px;color:#e8e8f2}
+#updpop .bt{display:flex;gap:8px}
+#updpop .bt button{flex:1;padding:12px;border-radius:8px;border:1px solid #3a3a52;background:#12121c;color:#fff;font-size:15px}
+#updpop .bt button.go{background:#e10600;border-color:#e10600;font-weight:800}
+#setform .srow{margin:10px 0}
+#setform .sl{font-size:13px;color:#cfcfe0;margin-bottom:2px}
+#setform input{width:100%;font:inherit;padding:10px;margin:3px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
+#setform .two{display:flex;flex-direction:column;gap:0}#setform .two input{min-width:0}
+#setgo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
 </style>
 </head>
 <body>
@@ -195,6 +230,7 @@ body.bn .cat,body.bn .gh,body.bn .prize{line-height:1.4}
   <div class="rt" data-i>REFRESHING…</div>
   <div class="rs" data-i>Race to catch the prize!</div>
 </div>
+<div id="updpop" hidden><div class="box"><h3 id="up_t"></h3><div class="vv" id="up_v"></div><div class="nt" id="up_n"></div><div class="bt"><button id="up_later" type="button" hidden></button><button id="up_go" class="go" type="button"></button></div></div></div>
 <div id="main" hidden><header>
   <div class="brand"><span data-i>KHELA HOBE</span><div class="sub" id="upd">Loading…</div></div>
   <div class="hb"><button id="ref" title="Refresh">↻</button>
@@ -202,10 +238,22 @@ body.bn .cat,body.bn .gh,body.bn .prize{line-height:1.4}
       <div id="menu" hidden>
         <button id="upb" data-i hidden>⬆ Upload data</button>
         <button id="aub" data-i hidden>＋ Add user</button>
+        <button id="swb" data-i hidden>📲 Upload software (APK)</button>
+        <button id="setb" data-i hidden>⚙ Edit lists &amp; texts</button>
         <button id="demob" data-i>▶ Preview rank animation</button>
         <button id="pwb" data-i>🔑 Change password</button>
         <div class="langbox"><div class="lt2">🌐 ভাষা / Language</div><div class="langrow"><button type="button" data-lang="bn">বাংলা</button><button type="button" data-lang="en">English</button></div></div>
-        <button id="out" data-i>⎋ Logout</button>
+        <button id="out" class="lobtn" type="button" aria-label="Log out"><span data-i>Log Out</span>
+          <svg class="lo" viewBox="0 0 40 32" width="40" height="32" aria-hidden="true">
+            <rect x="24" y="3" width="13" height="26" rx="1.6" fill="#1f2335"/>
+            <g class="person" fill="none" stroke="#4f6df5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="8" r="2.5" fill="#4f6df5" stroke="none"/>
+              <path d="M10 12L8.5 19"/>
+              <path class="arm a1" d="M10 13.5L14.5 15.5"/><path class="arm a2" d="M9.6 13.5L5.5 16"/>
+              <path class="leg l1" d="M8.5 19L12.5 25"/><path class="leg l2" d="M8.5 19L4.8 25.5"/>
+            </g>
+            <g class="door"><rect x="24" y="3" width="13" height="26" rx="1.6" fill="#4f6df5"/><circle cx="27.2" cy="16.5" r="1.1" fill="#f4f7ff"/></g>
+          </svg></button>
       </div>
     </div>
   </div>
@@ -226,6 +274,29 @@ body.bn .cat,body.bn .gh,body.bn .prize{line-height:1.4}
     <label class="opt"><input type="radio" name="upmode" value="append" checked> <span data-i>Add to existing data</span></label>
     <label class="opt"><input type="radio" name="upmode" value="replace"> <span data-i>Replace all existing data</span></label>
     <div class="hb" style="margin-top:14px"><button id="upgo" data-i disabled>Upload</button><button id="upback" data-i>Back</button></div>
+  </div>
+</div>
+<div id="setpanel" hidden>
+  <div class="card" style="margin-top:6px">
+    <h3 data-i>Edit lists &amp; texts</h3>
+    <div class="sub" style="line-height:1.5" data-i>Changes apply to every user. Leave a text empty to use the automatic / default text.</div>
+    <div id="setform"></div>
+    <div id="setmsg" class="msg" style="text-align:left;padding:6px 0"></div>
+    <div class="hb" style="margin-top:8px"><button id="setgo" data-i>Save</button><button id="setreset" type="button" data-i>Reset to default</button><button id="setback" data-i>Back</button></div>
+  </div>
+</div>
+<div id="swpanel" hidden>
+  <div class="card" style="margin-top:6px">
+    <h3 data-i>Upload software (APK)</h3>
+    <div class="sub" id="swcur" style="line-height:1.5"></div>
+    <input type="file" id="swfile" accept=".apk,application/vnd.android.package-archive">
+    <div id="swinfo" class="msg" style="text-align:left;padding:4px 0"></div>
+    <input type="text" id="swname" data-ip placeholder="Version name (e.g. 1.26)">
+    <input type="number" id="swcode" data-ip placeholder="Version number (build)">
+    <textarea id="swnotes" rows="3" data-ip placeholder="What is new? (shown to users)"></textarea>
+    <div class="note" style="text-transform:none;margin:4px 0" data-i>Every update is compulsory: users cannot use the app until they install it.</div>
+    <div id="swmsg" class="msg" style="text-align:left;padding:6px 0"></div>
+    <div class="hb" style="margin-top:8px"><button id="swgo" data-i disabled>Publish update</button><button id="swback" data-i>Back</button></div>
   </div>
 </div>
 <div id="aupanel" hidden>
@@ -297,7 +368,7 @@ const BN={
  "Sign in":"সাইন ইন","Signing in…":"সাইন ইন হচ্ছে…","LEADER BOARD":"লিডার বোর্ড",
  "LIVE · updates every minute":"লাইভ · প্রতি মিনিটে আপডেট হয়","REFRESHING…":"রিফ্রেশ হচ্ছে…","Race to catch the prize!":"পুরস্কার ধরার দৌড়!",
  "⬆ Upload data":"⬆ ডাটা আপলোড","＋ Add user":"＋ ইউজার যোগ করুন","▶ Preview rank animation":"▶ র‍্যাংক অ্যানিমেশন প্রিভিউ",
- "🔑 Change password":"🔑 পাসওয়ার্ড পরিবর্তন","⎋ Logout":"⎋ লগআউট",
+ "🔑 Change password":"🔑 পাসওয়ার্ড পরিবর্তন","Log Out":"লগ আউট",
  "Upload sales data":"বিক্রয় ডাটা আপলোড","Add to existing data":"আগের ডাটার সাথে যোগ করুন","Replace all existing data":"আগের সব ডাটা বদলে দিন",
  "Upload":"আপলোড","Back":"ফিরে যান","Add user":"ইউজার যোগ করুন","Full name":"পুরো নাম",
  "Username (e.g. rahim01)":"ইউজারনেম (যেমন rahim01)","Password (min 6 characters)":"পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)",
@@ -322,6 +393,14 @@ const BN={
  "This username already exists.":"এই ইউজারনেম আগে থেকেই আছে।","Only an admin can add users.":"শুধু অ্যাডমিন ইউজার যোগ করতে পারেন।","Only an admin user can upload data.":"শুধু অ্যাডমিন ডাটা আপলোড করতে পারেন।",
  "Username must be 2-30 characters: letters, numbers, dot, dash or underscore.":"ইউজারনেম ২-৩০ অক্ষরের হতে হবে: ইংরেজি অক্ষর, সংখ্যা, ডট, ড্যাশ বা আন্ডারস্কোর।",
  "Category column not found in the Sales sheet.":"Sales শীটে Category কলাম পাওয়া যায়নি।","User not found.":"ইউজার পাওয়া যায়নি।",
+ "📲 Upload software (APK)":"📲 সফটওয়্যার আপলোড (APK)","Upload software (APK)":"সফটওয়্যার আপলোড (APK)","Version name (e.g. 1.26)":"ভার্সনের নাম (যেমন 1.26)",
+ "Version number (build)":"ভার্সন নম্বর (বিল্ড)","What is new? (shown to users)":"নতুন কী আছে? (ইউজারদের দেখানো হবে)","Force update (users cannot skip)":"আপডেট বাধ্যতামূলক (ইউজার বাদ দিতে পারবে না)",
+ "Publish update":"আপডেট প্রকাশ করুন","Every update is compulsory: users cannot use the app until they install it.":"প্রতিটি আপডেট বাধ্যতামূলক: ইনস্টল না করা পর্যন্ত ইউজাররা অ্যাপ ব্যবহার করতে পারবে না।","Only an admin can upload the app.":"শুধু অ্যাডমিন অ্যাপ আপলোড করতে পারেন।","Version number is missing.":"ভার্সন নম্বর দেওয়া হয়নি।",
+ "This APK is for a different app.":"এই APK অন্য অ্যাপের।","No file received.":"কোনো ফাইল পাওয়া যায়নি।","This is not an APK file.":"এটি APK ফাইল নয়।",
+ "⚙ Edit lists & texts":"⚙ তালিকা ও লেখা সম্পাদনা","Edit lists & texts":"তালিকা ও লেখা সম্পাদনা",
+ "Changes apply to every user. Leave a text empty to use the automatic / default text.":"পরিবর্তন সব ইউজারের জন্য প্রযোজ্য। খালি রাখলে স্বয়ংক্রিয় / ডিফল্ট লেখা ব্যবহার হবে।",
+ "Save":"সংরক্ষণ","Reset to default":"ডিফল্টে ফিরুন","Only an admin can change these texts.":"শুধু অ্যাডমিন এই লেখাগুলো পরিবর্তন করতে পারেন।",
+ "The first list must show 3 to 50 dealers.":"প্রথম তালিকায় ৩ থেকে ৫০ জন ডিলার দেখানো যাবে।","The second list must show 0 to 50 dealers.":"দ্বিতীয় তালিকায় ০ থেকে ৫০ জন ডিলার দেখানো যাবে।",
  "NEW":"নতুন","YOU":"আপনি","No data":"কোনো ডাটা নেই","Unassigned":"নির্ধারিত নয়","THINNER":"থিনার","ADHESIVE":"অ্যাডহেসিভ","ZONE":"জোন","AREA":"এরিয়া",
  "TOP 10 DISTRIBUTORS":"সেরা ১০ ডিস্ট্রিবিউটর","TOP 5 DISTRIBUTORS":"সেরা ৫ ডিস্ট্রিবিউটর","DISTRIBUTORS BY ZONE":"জোন অনুযায়ী ডিস্ট্রিবিউটর","DISTRIBUTORS BY AREA":"এরিয়া অনুযায়ী ডিস্ট্রিবিউটর",
  "TOP 10 SALES OFFICERS":"সেরা ১০ সেলস অফিসার","SALES OFFICERS BY ZONE":"জোন অনুযায়ী সেলস অফিসার","SALES OFFICERS BY AREA":"এরিয়া অনুযায়ী সেলস অফিসার",
@@ -332,6 +411,50 @@ const T=s=>(LANG==="bn"&&BN[s]!==undefined)?BN[s]:s;
 const B=(en,bn)=>LANG==="bn"?bn:en;
 const D=n=>LANG==="bn"?String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]):String(n);
 const tm=()=>new Date().toLocaleTimeString(LANG==="bn"?"bn-BD":[], {hour:"2-digit",minute:"2-digit"});
+
+/* ---- admin-editable lists & texts ---- */
+const SET_DEF={n1:10,n2:5,
+ zone:{en:"DISTRIBUTORS BY ZONE",bn:"জোন অনুযায়ী ডিস্ট্রিবিউটর"},area:{en:"DISTRIBUTORS BY AREA",bn:"এরিয়া অনুযায়ী ডিস্ট্রিবিউটর"},
+ p1:{en:"🏆 PRIZE · THAILAND TOUR 🇹🇭",bn:"🏆 পুরস্কার · থাইল্যান্ড ট্যুর 🇹🇭"},p2:{en:"🏆 PRIZE · SRI LANKA TOUR 🇱🇰",bn:"🏆 পুরস্কার · শ্রীলঙ্কা ট্যুর 🇱🇰"},
+ t1:{en:"",bn:""},t2:{en:"",bn:""},n2note:{en:"",bn:""},zn:{en:"",bn:""},an:{en:"",bn:""}};
+let SET=JSON.parse(JSON.stringify(SET_DEF)), SETRAW={};
+function applySettings(o){
+  SETRAW=o||{}; const s=JSON.parse(JSON.stringify(SET_DEF)); o=o||{};
+  ["n1","n2"].forEach(k=>{ if(Number.isInteger(o[k])) s[k]=o[k] });
+  Object.keys(s).forEach(k=>{ if(typeof s[k]==="object"&&o[k]) ["en","bn"].forEach(l=>{ if(typeof o[k][l]==="string"&&o[k][l].trim()) s[k][l]=o[k][l].trim() }) });
+  SET=s;
+}
+const bdg=n=>String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]);
+function autoText(k,l){                        // the text used when the admin leaves a box empty
+  const n1=SET.n1,n2=SET.n2,bn=l==="bn";
+  if(k==="t1") return bn?"সেরা "+bdg(n1)+" ডিস্ট্রিবিউটর":"TOP "+n1+" DISTRIBUTORS";
+  if(k==="t2") return bn?"সেরা "+bdg(n2)+" ডিস্ট্রিবিউটর":"TOP "+n2+" DISTRIBUTORS";
+  if(k==="n2note") return bn?'সেরা '+bdg(n1)+' এখানে নেই · "থেকে" = আগের সামগ্রিক অবস্থান':'Top '+n1+' not repeated · "from" = overall position before';
+  if(k==="zn") return bn?"প্রতি জোনের ১ম ও ২য় · সেরা "+bdg(n1)+" বাদে":"1st & 2nd of each zone · Top "+n1+" not repeated";
+  if(k==="an") return bn?"প্রতি এরিয়ার ১ম ও ২য় · সেরা "+bdg(n1)+" বাদে":"1st & 2nd of each area · Top "+n1+" not repeated";
+  return SET_DEF[k]?SET_DEF[k][l]:"";
+}
+const txt=k=>(LANG==="bn"?SET[k].bn:SET[k].en)||autoText(k,LANG);
+const SET_ROWS=[["t1","Title of the first list","প্রথম তালিকার শিরোনাম"],["p1","Prize / gift text of the first list","প্রথম তালিকার পুরস্কার / উপহারের লেখা"],
+  ["t2","Title of the second list","দ্বিতীয় তালিকার শিরোনাম"],["p2","Prize / gift text of the second list","দ্বিতীয় তালিকার পুরস্কার / উপহারের লেখা"],
+  ["n2note","Note under the second list","দ্বিতীয় তালিকার নিচের নোট"],["zone","Zone card title (Thinner team)","জোন কার্ডের শিরোনাম (থিনার টিম)"],
+  ["zn","Zone card note","জোন কার্ডের নোট"],["area","Area card title (Adhesive team)","এরিয়া কার্ডের শিরোনাম (অ্যাডহেসিভ টিম)"],["an","Area card note","এরিয়া কার্ডের নোট"]];
+function buildSetForm(){
+  const raw=SETRAW||{}, att=x=>String(x==null?"":x).replace(/"/g,"&quot;");
+  let h=`<div class="srow"><div class="sl">${B("How many dealers in the first list","প্রথম তালিকায় কতজন ডিলার")}</div><input type="number" id="st_n1" min="3" max="50" value="${att(raw.n1)}" placeholder="10"></div>
+         <div class="srow"><div class="sl">${B("How many dealers in the second list (0 = hide it)","দ্বিতীয় তালিকায় কতজন ডিলার (০ = লুকানো)")}</div><input type="number" id="st_n2" min="0" max="50" value="${att(raw.n2)}" placeholder="5"></div>`;
+  SET_ROWS.forEach(r=>{ const v=raw[r[0]]||{};
+    h+=`<div class="srow"><div class="sl">${B(r[1],r[2])}</div><div class="two">
+      <input type="text" id="st_${r[0]}_en" maxlength="120" value="${att(v.en)}" placeholder="${att(autoText(r[0],"en")||"English")}">
+      <input type="text" id="st_${r[0]}_bn" maxlength="120" value="${att(v.bn)}" placeholder="${att(autoText(r[0],"bn")||"বাংলা")}"></div></div>`; });
+  $("setform").innerHTML=h;
+}
+function readSetForm(){
+  const o={}, n1=$("st_n1").value.trim(), n2=$("st_n2").value.trim();
+  if(n1!=="") o.n1=parseInt(n1,10); if(n2!=="") o.n2=parseInt(n2,10);
+  SET_ROWS.forEach(r=>{ const en=$("st_"+r[0]+"_en").value.trim(), bn=$("st_"+r[0]+"_bn").value.trim(); if(en||bn) o[r[0]]={en,bn} });
+  return o;
+}
 function applyLang(){
   document.documentElement.lang=LANG; document.body.classList.toggle("bn",LANG==="bn");
   document.title=T("Khela Hobe")+" - Samuda Spec Chem Ltd.";
@@ -339,6 +462,7 @@ function applyLang(){
   document.querySelectorAll("[data-ip]").forEach(e=>{ if(e.dataset.en===undefined) e.dataset.en=e.getAttribute("placeholder"); e.setAttribute("placeholder",T(e.dataset.en)) });
   document.querySelectorAll("[data-lang]").forEach(b=>b.classList.toggle("on",b.dataset.lang===LANG));
   if(typeof setHelp==="function") setHelp();
+  if(!$("setpanel").hidden) buildSetForm();
 }
 function setLang(l){
   $("menu").hidden=true;
@@ -406,11 +530,12 @@ function ingest(j){
     rows.forEach(r=>{ if(r.dCode) r.dist=(dn[r.dCode]||r.dCode)+" ("+r.dCode+")" });
 }
 function saveCache(j){            // lets the app open instantly next time (only when "keep me signed in")
-  try{ if(localStorage.getItem("tk")) localStorage.setItem("rk:data",JSON.stringify({header:j.header,rows:j.rows,role:j.role,user:myId})) }catch(e){}
+  try{ if(localStorage.getItem("tk")) localStorage.setItem("rk:data",JSON.stringify({header:j.header,rows:j.rows,role:j.role,user:myId,settings:SETRAW})) }catch(e){}
 }
 function showNow(d,flip,intro){
   if(d.user) myId=norm(d.user);
-  ingest(d); showMain(); setRole(d.role); saveCache(d); render(!!flip,!!intro);
+  applySettings(d.settings);
+  ingest(d); showMain(); setRole(d.role); saveCache(d); render(!!flip,!!intro); checkUpdate(d.update);
   $("upd").textContent=T("Updated ")+tm();
 }
 let busy=false, chg=false, retryN=0, retryT=null;
@@ -474,9 +599,10 @@ async function load(silent,anim,fresh){
     const j=await api({action:"data",token:getToken(),fresh:!!fresh});
     if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin(T("Session expired. Please sign in again.")); return } throw new Error(j.error) }
     if(j.user) myId=norm(j.user);
+    applySettings(j.settings);
     ingest(j); showMain(); setRole(j.role); saveCache(j);
     if(anim){ const w=500-(Date.now()-t0); if(w>0) await new Promise(r=>setTimeout(r,w)); run(false) }   // runner shows at least half a second
-    render(!!silent,!!anim);
+    render(!!silent,!!anim); checkUpdate(j.update);
     retryN=0;
     $("upd").textContent=T("Updated ")+tm();
   }catch(e){
@@ -579,7 +705,7 @@ function fCard(cls,cat,sub,list,cid,bd,medal,full){
   const keys=list.map(e=>e[0]), t=track(cid,keys,full);
   if(full){ TRK[cls]=t; FULLBY[cid]=t.full; PREVBY[cid]=t.prevFull }
   const body=list.length?list.map((e,i)=>row(cid,e[0],i,t,medal)).join(""):'<div class="msg">'+T("No data")+'</div>';
-  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${T(cat)}</span>${T(sub)}</div>${bd||""}${body}</div>`;
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${T(cat)}</span>${esc(T(sub))}</div>${bd||""}${body}</div>`;
 }
 function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
   if(noTeam(cls)) return "";
@@ -590,32 +716,32 @@ function gCard(cls,cat,sub,groups,ok,colName,cid,lbl,bd){
     const id=per+":"+cid+":"+gn, t=track(id,list.map(e=>e[0]));
     return `<div class="gh">${T(lbl)} · ${esc(T(gn))}</div>`+list.map((e,i)=>row(id,e[0],i,t)).join("");
   }).join("");
-  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${T(cat)}</span>${T(sub)}</div>${bd||""}${body}</div>`;
+  return `<div class="tw ${cls}"><div class="hd"><span class="cat">${T(cat)}</span>${esc(T(sub))}</div>${bd||""}${body}</div>`;
 }
-const prizeBox=()=>`<div class="prize">🏆 ${B("PRIZE","পুরস্কার")} · ${esc(T(CONFIG.PRIZE_DIST))} 🇹🇭</div>`;
-const tourBox=()=>`<div class="prize">🏆 ${B("PRIZE","পুরস্কার")} · ${esc(T(CONFIG.PRIZE_DIST5))} 🇱🇰</div><div class="note">${B('Top 10 not repeated · "from" = overall position before','সেরা ১০ এখানে নেই · "থেকে" = আগের সামগ্রিক অবস্থান')}</div>`;
+const prizeBox=()=>`<div class="prize">${esc(txt("p1"))}</div>`;
+const tourBox=()=>`<div class="prize">${esc(txt("p2"))}</div><div class="note">${esc(txt("n2note"))}</div>`;
 const cerBox=()=>`<div class="prize cer">🎖 ${B("ATTEND","অংশগ্রহণ")} · ${esc(T(CONFIG.CEREMONY))}</div>`;
 function render(flip,intro){
   const m=per, old={}, oldHtml={}; chg=false;
   if(flip) document.querySelectorAll("[data-k]").forEach(e=>{ old[e.dataset.k]=e.getBoundingClientRect().top; oldHtml[e.dataset.k]=e.outerHTML });
-  const T=(c,k)=>top10(c,k,m), keys=l=>new Set(l.map(e=>e[0]));
+  const T=(c,k)=>top10(c,k,m,null,SET.n1), keys=l=>new Set(l.map(e=>e[0]));
   const tD=T("Thinner","dist"), aD=T("Adhesive","dist"), tS=T("Thinner","so"), aS=T("Adhesive","so");
   const FT=top10("Thinner","dist",m,null,99999).map(e=>e[0]), FA=top10("Adhesive","dist",m,null,99999).map(e=>e[0]);
   const FTS=CONFIG.SHOW_SALES_OFFICERS?top10("Thinner","so",m,null,99999).map(e=>e[0]):null, FAS=CONFIG.SHOW_SALES_OFFICERS?top10("Adhesive","so",m,null,99999).map(e=>e[0]):null;
-  const t5D=top10("Thinner","dist",m,keys(tD),5), a5D=top10("Adhesive","dist",m,keys(aD),5);
+  const t5D=SET.n2>0?top10("Thinner","dist",m,keys(tD),SET.n2):[], a5D=SET.n2>0?top10("Adhesive","dist",m,keys(aD),SET.n2):[];
   const top10Cards=CONFIG.SHOW_TOP10?(
-   fCard("t","THINNER","TOP 10 DISTRIBUTORS",tD,"td",prizeBox(),1,FT)+
-   fCard("a","ADHESIVE","TOP 10 DISTRIBUTORS",aD,"ad",prizeBox(),1,FA)+
-   fCard("t","THINNER","TOP 5 DISTRIBUTORS",t5D,"t5d",tourBox(),0,FT)+
-   fCard("a","ADHESIVE","TOP 5 DISTRIBUTORS",a5D,"a5d",tourBox(),0,FA)+
+   fCard("t","THINNER",txt("t1"),tD,"td",prizeBox(),1,FT)+
+   fCard("a","ADHESIVE",txt("t1"),aD,"ad",prizeBox(),1,FA)+
+   (SET.n2>0?(fCard("t","THINNER",txt("t2"),t5D,"t5d",tourBox(),0,FT)+
+   fCard("a","ADHESIVE",txt("t2"),a5D,"a5d",tourBox(),0,FA)):"")+
    (CONFIG.SHOW_SALES_OFFICERS?(
     fCard("t","THINNER","TOP 10 SALES OFFICERS",tS,"ts",cerBox(),1,FTS)+
     fCard("a","ADHESIVE","TOP 10 SALES OFFICERS",aS,"as",cerBox(),1,FAS)):"")):"";
-  const nz='<div class="note">'+B('1st &amp; 2nd of each zone · Top 10 not repeated','প্রতি জোনের ১ম ও ২য় · সেরা ১০ বাদে')+'</div>', na='<div class="note">'+B('1st &amp; 2nd of each area · Top 10 not repeated','প্রতি এরিয়ার ১ম ও ২য় · সেরা ১০ বাদে')+'</div>';
+  const nz='<div class="note">'+esc(txt("zn"))+'</div>', na='<div class="note">'+esc(txt("an"))+'</div>';
   const zoneCards=CONFIG.SHOW_ZONE_AREA?(
-   gCard("t","THINNER","DISTRIBUTORS BY ZONE",byGroup("Thinner","dist","zone",m,keys(tD)),has.zone,"Zone","tdz","ZONE",nz)+
+   gCard("t","THINNER",txt("zone"),byGroup("Thinner","dist","zone",m,keys(tD)),has.zone,"Zone","tdz","ZONE",nz)+
    (CONFIG.SHOW_SALES_OFFICERS?gCard("t","THINNER","SALES OFFICERS BY ZONE",byGroup("Thinner","so","zone",m,keys(tS)),has.zone,"Zone","tsz","ZONE",nz):"")+
-   gCard("a","ADHESIVE","DISTRIBUTORS BY AREA",byGroup("Adhesive","dist","area",m,keys(aD)),has.area,"Area","ada","AREA",na)+
+   gCard("a","ADHESIVE",txt("area"),byGroup("Adhesive","dist","area",m,keys(aD)),has.area,"Area","ada","AREA",na)+
    (CONFIG.SHOW_SALES_OFFICERS?gCard("a","ADHESIVE","SALES OFFICERS BY AREA",byGroup("Adhesive","so","area",m,keys(aS)),has.area,"Area","asa","AREA",na):"")):"";
   $("app").innerHTML=meBox(FT,FA)+`<div class="grid">`+top10Cards+zoneCards+`</div>`;
   // "previous update -> current update" line
@@ -722,8 +848,8 @@ function render(flip,intro){
 }
 $("ref").onclick=()=>{ $("upd").textContent=T("Refreshing…"); load(true,true,true) };
 /* ---- auth ---- */
-async function api(body){
-  const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),30000);       // never hang forever
+async function api(body,ms){
+  const ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),ms||30000);       // never hang forever
   try{
     const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body),signal:ctl.signal});
     const t=await r.text();
@@ -735,8 +861,8 @@ const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
 const clearToken=()=>{sessionStorage.removeItem("tk");localStorage.removeItem("tk");try{localStorage.removeItem("rk:data")}catch(e){}};
 function showLogin(msg){ $("main").hidden=true; $("login").hidden=false; $("lerr").textContent=msg||""; $("lp").value="" }
 let userRole="viewer", myId="", teamHas={t:true,a:true};
-function setRole(r){ userRole=r||"viewer"; $("upb").hidden=r!=="admin"; $("aub").hidden=r!=="admin" }
-function openPanel(id){ ["dash","uppanel","pwpanel","aupanel"].forEach(x=>$(x).hidden=x!==id); $("menu").hidden=true }
+function setRole(r){ userRole=r||"viewer"; $("upb").hidden=r!=="admin"; $("aub").hidden=r!=="admin"; $("swb").hidden=r!=="admin"; $("setb").hidden=r!=="admin" }
+function openPanel(id){ ["dash","uppanel","pwpanel","aupanel","swpanel","setpanel"].forEach(x=>$(x).hidden=x!==id); $("menu").hidden=true }
 function showMain(){ $("login").hidden=true; $("main").hidden=false; openPanel("dash") }
 $("lf").onsubmit=async e=>{
   e.preventDefault(); const b=$("lb"); b.disabled=true; b.textContent=T("Signing in…"); $("lerr").textContent="";
@@ -746,12 +872,17 @@ $("lf").onsubmit=async e=>{
     if(!j.ok) throw new Error(j.error);
     (  $("lr").checked?localStorage:sessionStorage ).setItem("tk",j.token);
     $("lp").value="";
-    if(j.sales) showNow({header:j.sales.header,rows:j.sales.rows,role:j.role,user:j.user||$("lu").value},false,true);   // fast path: data came with login
+    if(j.sales) showNow({header:j.sales.header,rows:j.sales.rows,role:j.role,user:j.user||$("lu").value,update:j.update,settings:j.settings},false,true);   // fast path: data came with login
     else load(false,true);                                                                // older backend: fetch separately
   }catch(err){ $("lerr").textContent=T(err.message) }
   b.disabled=false; b.textContent=T("Sign in");
 };
-$("out").onclick=async()=>{ const t=getToken(); clearToken(); rows=[]; showLogin(); try{await api({action:"logout",token:t})}catch(_){} };
+async function doLogout(){ const t=getToken(); clearToken(); rows=[]; showLogin(); try{await api({action:"logout",token:t})}catch(_){} }
+$("out").onclick=e=>{                                      // the person runs through the door, then you are logged out
+  e.stopPropagation(); const b=$("out"); if(b.classList.contains("go")) return;
+  b.classList.add("go");
+  setTimeout(()=>{ b.classList.remove("go"); $("menu").hidden=true; doLogout() },1200);
+};
 /* ---- upload (admin) ---- */
 let up={header:null,rows:[]};
 function setHelp(){ const cols=Object.values(CONFIG.COL).join(", ");
@@ -877,6 +1008,118 @@ function sampleDemo(){                                   // no earlier ranking s
 }
 $("demob").onclick=demoRank;
 document.querySelectorAll("[data-lang]").forEach(b=>{ b.onclick=e=>{ e.stopPropagation(); setLang(b.dataset.lang) } });
+
+/* ---- edit lists & texts (admin) ---- */
+$("setb").onclick=()=>{ openPanel("setpanel"); buildSetForm(); $("setmsg").textContent="" };
+$("setback").onclick=()=>openPanel("dash");
+async function saveSet(obj){
+  const m=$("setmsg"); m.textContent=T("Saving…");
+  try{
+    const j=await api({action:"savesettings",token:getToken(),settings:obj});
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin(T("Session expired. Please sign in again.")); return } throw new Error(j.error) }
+    applySettings(j.settings); buildSetForm(); render(false,false);
+    m.textContent=B("✔ Saved. Every user sees the new texts at the next refresh.","✔ সংরক্ষিত হয়েছে। প্রত্যেক ইউজার পরের রিফ্রেশে নতুন লেখা দেখবেন।");
+  }catch(err){ m.innerHTML='<span class="err">'+esc(T(err.message))+'</span>' }
+}
+$("setgo").onclick=()=>saveSet(readSetForm());
+$("setreset").onclick=()=>{ if(confirm(B("Reset every list size and text to the default?","সব তালিকার সংখ্যা ও লেখা ডিফল্টে ফিরিয়ে দেবেন?"))) saveSet(null) };
+
+/* ---- software updates ---- */
+let curUpdate=null;
+const installed=()=>{ try{ return (typeof AndroidApp!=="undefined")?AndroidApp.versionCode():0 }catch(e){ return 0 } };
+function checkUpdate(u){
+  if(!u) return; curUpdate=u;
+  const me=installed(); if(!me||u.code<=me) return;                          // only inside the installed app, only when newer
+  $("up_t").textContent=B("🔔 Update required","🔔 আপডেট বাধ্যতামূলক");
+  $("up_v").textContent=B("Version "+u.name+" (build "+u.code+") · you have build "+me,"ভার্সন "+u.name+" (বিল্ড "+D(u.code)+") · আপনার বিল্ড "+D(me));
+  $("up_n").textContent=(u.notes?u.notes+"\n\n":"")+B("You must install this new version to keep using the app.","অ্যাপ ব্যবহার চালিয়ে যেতে এই নতুন ভার্সন ইনস্টল করতে হবে।");
+  $("up_go").textContent=B("Update now","এখন আপডেট করুন");
+  $("up_later").hidden=true;                                                  // compulsory: no "Later"
+  $("updpop").hidden=false;
+}
+$("up_go").onclick=()=>{ if(curUpdate){ window.location.href=curUpdate.url } };          // opens the download; tap the file to install
+
+// reads versionCode / versionName / package straight out of the APK file
+function parseAxml(d){
+  const v=new DataView(d.buffer,d.byteOffset,d.byteLength); let off=8; const strs=[], res=[], out={};
+  while(off<d.length){
+    const type=v.getUint16(off,true), hsz=v.getUint16(off+2,true), size=v.getUint32(off+4,true);
+    if(type===0x0001){
+      const n=v.getUint32(off+8,true), fl=v.getUint32(off+16,true), sOff=v.getUint32(off+20,true), u8=(fl&0x100)!==0;
+      for(let i=0;i<n;i++){
+        let so=off+sOff+v.getUint32(off+28+i*4,true), t="";
+        if(u8){ so+=(d[so]&0x80)?2:1; let bl=d[so]; if(bl&0x80){ bl=((bl&0x7f)<<8)|d[so+1]; so+=2 } else so+=1; t=new TextDecoder().decode(d.subarray(so,so+bl)) }
+        else{ let l=v.getUint16(so,true); so+=2; if(l&0x8000){ l=((l&0x7fff)<<16)|v.getUint16(so,true); so+=2 } for(let k=0;k<l;k++) t+=String.fromCharCode(v.getUint16(so+k*2,true)) }
+        strs.push(t);
+      }
+    }else if(type===0x0180){ const n=(size-hsz)/4; for(let i=0;i<n;i++) res.push(v.getUint32(off+hsz+i*4,true)) }
+    else if(type===0x0102 && strs[v.getUint32(off+20,true)]==="manifest"){
+      const aStart=v.getUint16(off+24,true), aSize=v.getUint16(off+26,true), aCount=v.getUint16(off+28,true);
+      let a=off+16+aStart;
+      for(let i=0;i<aCount;i++,a+=aSize){
+        const nIdx=v.getUint32(a+4,true), raw=v.getInt32(a+8,true), data=v.getUint32(a+16,true), rid=res[nIdx]||0;
+        if(rid===0x0101021b) out.code=data;
+        else if(rid===0x0101021c) out.name=raw>=0?strs[raw]:String(data);
+        else if(strs[nIdx]==="package") out.pkg=raw>=0?strs[raw]:"";
+      }
+      return out;
+    }
+    off+=size;
+  }
+  return out;
+}
+async function apkInfo(buf){
+  const dv=new DataView(buf), u8=new Uint8Array(buf);
+  let e=u8.length-22; while(e>=0&&dv.getUint32(e,true)!==0x06054b50) e--;
+  if(e<0) throw new Error("zip");
+  const cnt=dv.getUint16(e+10,true); let p=dv.getUint32(e+16,true), ent=null;
+  for(let i=0;i<cnt&&dv.getUint32(p,true)===0x02014b50;i++){
+    const method=dv.getUint16(p+10,true), cs=dv.getUint32(p+20,true), nl=dv.getUint16(p+28,true), el=dv.getUint16(p+30,true), cl=dv.getUint16(p+32,true), lho=dv.getUint32(p+42,true);
+    if(new TextDecoder().decode(u8.subarray(p+46,p+46+nl))==="AndroidManifest.xml"){ ent={method,cs,lho}; break }
+    p+=46+nl+el+cl;
+  }
+  if(!ent) throw new Error("manifest");
+  const start=ent.lho+30+dv.getUint16(ent.lho+26,true)+dv.getUint16(ent.lho+28,true);
+  let data=u8.subarray(start,start+ent.cs);
+  if(ent.method===8){ const st=new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw")); data=new Uint8Array(await new Response(st).arrayBuffer()) }
+  return parseAxml(data);
+}
+let swFile=null, swPkg="";
+function swRefresh(){
+  const u=curUpdate;
+  $("swcur").textContent=u?B("Published: "+u.name+" (build "+u.code+") · "+new Date(u.date).toLocaleDateString(),"প্রকাশিত: "+u.name+" (বিল্ড "+D(u.code)+") · "+new Date(u.date).toLocaleDateString("bn-BD"))
+                          :B("No update published yet.","এখনও কোনো আপডেট প্রকাশ করা হয়নি।");
+  if(installed()) $("swcur").textContent+="  |  "+B("Installed: build "+installed(),"ইনস্টল করা: বিল্ড "+D(installed()));
+}
+$("swb").onclick=()=>{ openPanel("swpanel"); swRefresh(); $("swmsg").textContent=""; $("swinfo").textContent="" };
+$("swback").onclick=()=>openPanel("dash");
+$("swfile").onchange=async e=>{
+  const f=e.target.files[0]; swFile=null; $("swgo").disabled=true; if(!f) return;
+  $("swinfo").textContent=B("Reading the APK…","APK পড়া হচ্ছে…");
+  try{
+    const info=await apkInfo(await f.arrayBuffer());
+    if(info.pkg&&info.pkg!=="com.salesdashboard.app") throw new Error(B("This APK belongs to a different app ("+info.pkg+").","এই APK অন্য অ্যাপের ("+info.pkg+")।"));
+    swPkg=info.pkg||""; $("swcode").value=info.code||(/v(\d+)/i.exec(f.name)||[])[1]||""; $("swcode").readOnly=!!info.code; $("swname").value=info.name||("1."+$("swcode").value);
+    swFile=f; $("swgo").disabled=false;
+    $("swinfo").innerHTML="✔ "+esc(f.name)+" · "+B("version "+(info.name||"?")+", build "+(info.code||"?")+", "+(f.size/1024|0)+" KB","ভার্সন "+esc(info.name||"?")+", বিল্ড "+D(info.code||"?")+", "+D(f.size/1024|0)+" KB");
+  }catch(err){
+    swPkg=""; $("swcode").readOnly=false; $("swcode").value=(/v(\d+)/i.exec(f.name)||[])[1]||""; swFile=f; $("swgo").disabled=!$("swcode").value;
+    $("swinfo").innerHTML='<span class="err">'+esc(err.message==="zip"||err.message==="manifest"?B("Could not read the version from this file - type it below.","ফাইল থেকে ভার্সন পড়া যায়নি - নিচে নিজে লিখুন।"):err.message)+'</span>';
+  }
+};
+$("swgo").onclick=async()=>{
+  if(!swFile) return; const m=$("swmsg"), b=$("swgo");
+  if(!confirm(B("Publishing makes this update COMPULSORY for every user. Continue?","প্রকাশ করলে এই আপডেট সব ইউজারের জন্য বাধ্যতামূলক হবে। চালিয়ে যাবেন?"))) return;
+  b.disabled=true;
+  m.textContent=B("Uploading… please wait (about a minute).","আপলোড হচ্ছে… একটু অপেক্ষা করুন (প্রায় এক মিনিট)।");
+  try{
+    const u8=new Uint8Array(await swFile.arrayBuffer()); let bin=""; for(let i=0;i<u8.length;i+=0x8000) bin+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));
+    const j=await api({action:"uploadapp",token:getToken(),code:$("swcode").value,name:$("swname").value,notes:$("swnotes").value,force:true,pkg:swPkg,data:btoa(bin)},180000);
+    if(!j.ok){ if(j.error==="SESSION"){ clearToken(); showLogin(T("Session expired. Please sign in again.")); return } throw new Error(j.error) }
+    curUpdate=j.update; swRefresh(); m.textContent=B("✔ Published! Users will see the update pop-up the next time they open or refresh the app.","✔ প্রকাশিত হয়েছে! ইউজাররা পরেরবার অ্যাপ খুললে বা রিফ্রেশ করলে আপডেটের পপ-আপ দেখবে।");
+    $("swfile").value=""; swFile=null;
+  }catch(err){ m.innerHTML='<span class="err">'+esc(T(err.message))+'</span>'; b.disabled=false }
+};
 
 /* ---- menu + add user ---- */
 $("mbtn").onclick=e=>{ e.stopPropagation(); $("menu").hidden=!$("menu").hidden };
