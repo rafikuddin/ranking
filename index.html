@@ -106,7 +106,7 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 #aupanel input,#aupanel select{width:100%;font:inherit;padding:11px;margin:5px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
 #augo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
 #augo:disabled{opacity:.45}
-.cmp{text-align:center;font-size:11px;color:#cfcfe0;margin:-8px 0 14px;letter-spacing:.05em;text-transform:uppercase}
+.cmp{text-align:center;font-size:11px;color:#cfcfe0;margin:2px 0 14px;letter-spacing:.05em;text-transform:uppercase}
 .cmp b{color:#fff}
 #pwpanel input[type=password]{width:100%;font:inherit;padding:11px;margin:5px 0;border:1px solid var(--bar);border-radius:8px;background:var(--bg);color:var(--tx)}
 #pwgo{flex:1;background:var(--t);color:#fff;border:0;font-weight:600}
@@ -168,7 +168,10 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .meb{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:linear-gradient(135deg,#0b6b86,#0f2f4d);border:1px solid #00e5ff;box-shadow:0 0 18px rgba(0,229,255,.35)}
 .meb .mt{font-weight:900;letter-spacing:.1em;font-size:12px;color:#9ff3ff}
 .meb .mn{font-weight:800;font-size:15px;margin:2px 0 8px;text-transform:uppercase}
-.mrs{display:flex;gap:8px;flex-wrap:wrap}
+.mrs{display:flex;flex-direction:column;gap:8px}
+.mcw{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.wh{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+.wh span{font-size:12px;line-height:1.25;color:#dff9ff;background:rgba(0,229,255,.12);border:1px solid rgba(0,229,255,.35);border-radius:6px;padding:3px 8px}
 .mc{display:flex;align-items:center;gap:6px;background:#0c1622;border-radius:6px;padding:6px 10px}
 .mc .rk{display:inline;width:auto;color:#fff;font-size:22px;font-weight:900}
 .mc .of{font-size:11px;color:#9a9aae}
@@ -261,7 +264,6 @@ body.bn .cat,body.bn .gh,body.bn .prize{line-height:1.4}
 <div id="dash" class="f1"><div class="lb-title" data-i>LEADER BOARD</div>
 <div class="co">Samuda Spec Chem Ltd.</div>
 <div class="chk"></div>
-<div class="lv"><i></i><span data-i>LIVE · updates every minute</span></div>
 <div class="cmp" id="cmp"></div>
 <div id="app"><div class="msg">Loading data…</div></div>
 </div>
@@ -351,6 +353,7 @@ const CONFIG = {
   CURRENCY: "৳",
   PRIZE_DIST: "Thailand Tour",   // prize on the Top 10 Distributor cards
   PRIZE_DIST5: "Sri Lanka Tour",                // prize on the Top 5 Distributor cards (outside the Top 10)
+  AUTO_REFRESH_SEC: 0,                         // 0 = no automatic refresh (users tap the refresh button); e.g. 60 = every minute
   LANG: "bn",                                   // default language: "bn" = Bangla, "en" = English (users can switch in the menu)
   CEREMONY: "National Award Giving Ceremony",   // Top 10 Sales Officers attend this     // shown on the Sales Officer cards
   SHOW_TOP10: true,         // the 4 "Top 10" cards
@@ -692,7 +695,22 @@ function meBox(FT,FA){                              // "YOUR RANK" box for a dis
     name=k.replace(/ \([^()]*\)$/,"").replace(/\s*\((adhesive|thinner)\)\s*$/i,"");
     const r=F.indexOf(k)+1, t=TRK[cls]; let mv="";
     if(t&&t.prevFull){ const pp=t.prevFull.indexOf(k)+1; if(pp>0&&pp!==r) mv=pp>r?`<b class="u">▲${D(pp-r)}</b>`:`<b class="d">▼${D(r-pp)}</b>` }
-    return `<div class="mc ${cls}"><span class="cat">${T(label)}</span><span class="rk">#${D(r)}</span><span class="of">${B("of "+F.length,"মোট "+D(F.length)+" এর মধ্যে")}</span>${mv}</div>`;
+    // where is he listed?
+    const n1=SET.n1, n2=SET.n2, ch=[];
+    if(r<=n1) ch.push(B("🏆 In Top "+n1+" · position "+r,"🏆 সেরা "+bdg(n1)+" তালিকায় · "+bdg(r)+" নম্বরে"));
+    else if(n2>0&&r<=n1+n2) ch.push(B("🎁 In Top "+n2+" · position "+(r-n1),"🎁 সেরা "+bdg(n2)+" তালিকায় · "+bdg(r-n1)+" নম্বরে"));
+    else ch.push(B("Outside the Top "+n1+" and Top "+n2+" lists","সেরা "+bdg(n1)+" ও সেরা "+bdg(n2)+" তালিকার বাইরে"));
+    const cat=cls==="t"?"Thinner":"Adhesive", gk=cls==="t"?"zone":"area", gl=cls==="t"?B("Zone","জোন"):B("Area","এরিয়া");
+    const mineRow=rows.find(x=>x.cat===cat&&x.dist===k&&x[gk]);
+    if(mineRow){
+      const g=mineRow[gk], top=new Set(F.slice(0,n1));
+      const ent=byGroup(cat,"dist",gk,per,top).find(x=>x[0]===g), li=ent?ent[1].findIndex(e=>e[0]===k):-1;
+      if(li>=0) ch.push(B("📍 In "+gl+" list · "+g+" · #"+(li+1),"📍 "+gl+" তালিকায় · "+g+" · "+bdg(li+1)+" নম্বরে"));
+      else{ const mp={}; rows.forEach(x=>{ if(x.cat===cat&&inPer(x)&&x[gk]===g) mp[x.dist]=(mp[x.dist]||0)+x.val });
+        const L=Object.entries(mp).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])), pos=L.findIndex(e=>e[0]===k)+1;
+        if(pos>0) ch.push(B("📍 "+gl+" "+g+" · #"+pos+" of "+L.length,"📍 "+gl+" "+g+" · "+bdg(L.length)+" জনের মধ্যে "+bdg(pos)+" নম্বরে")) }
+    }
+    return `<div class="mcw"><div class="mc ${cls}"><span class="cat">${T(label)}</span><span class="rk">#${D(r)}</span><span class="of">${B("of "+F.length,"মোট "+D(F.length)+" এর মধ্যে")}</span>${mv}</div><div class="wh">${ch.map(x=>"<span>"+esc(x)+"</span>").join("")}</div></div>`;
   };
   const a=one(FT,"t","THINNER"), b=one(FA,"a","ADHESIVE");
   if(!a&&!b) return "";
@@ -1190,7 +1208,7 @@ $("pwf").onsubmit=async e=>{
 
 window.addEventListener("online",()=>{ if(getToken()&&!$("main").hidden) load(true) });
 /* ---- auto update ---- */
-setInterval(()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) },60000);
+if(CONFIG.AUTO_REFRESH_SEC>0) setInterval(()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) },CONFIG.AUTO_REFRESH_SEC*1000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !$("main").hidden && getToken() && !$("dash").hidden) load(true) });
 
 applyLang();
