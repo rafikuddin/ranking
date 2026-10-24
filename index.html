@@ -116,36 +116,12 @@ h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mu);
 .prize.gift{background:linear-gradient(90deg,#27f4d2,#3b9cff)}
 #run{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:#15151e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-style:italic}
 #run[hidden]{display:none}
-#run .stage{position:relative;width:340px;max-width:100%;height:190px}
-#run .stage svg{overflow:visible;display:block}
-#run .stage svg.stairs{position:absolute;left:0;top:0}
-#run .rn{position:absolute;left:0;bottom:10px}
-#run .rx{animation:rx var(--d) linear infinite;animation-delay:var(--dl)}
-#run .ry{animation:climb var(--d) linear infinite;animation-delay:var(--dl)}
-@keyframes rx{from{transform:translateX(0)}to{transform:translateX(290px)}}
-#run .ry{position:relative}
-#run .shd{position:absolute;left:3px;bottom:-1px;width:28px;height:6px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,0) 70%);animation:shd var(--d) linear infinite;animation-delay:var(--dl)}
-@keyframes shd{0%,91%{opacity:1}93%,100%{opacity:0}}
-#run .th,#run .sh,#run .ft,#run .ua,#run .fo{animation-duration:var(--T);animation-iteration-count:infinite;animation-timing-function:ease-in-out}
-#run .th{transform-origin:50px 58px;animation-name:kth}
-#run .sh{transform-origin:50px 76px;animation-name:ksh}
-#run .ft{transform-origin:50px 92px;animation-name:kft}
-#run .ua{transform-origin:62px 32px;animation-name:kua}
-#run .fo{transform-origin:62px 46px;animation-name:kfo}
-#run .nr{animation-delay:calc(var(--T) * var(--o) * -1)}
-#run .fr{animation-delay:calc(var(--T) * (var(--o) + .5) * -1)}
-#run .bd{animation:kbd var(--T) ease-in-out infinite;animation-delay:calc(var(--T) * var(--o) * -1)}
-/* one full running stride: foot strike -> mid stance -> toe-off -> heel kick -> knee drive */
-@keyframes kth{0%{transform:rotate(-35deg)}15%{transform:rotate(-5deg)}30%{transform:rotate(25deg)}45%{transform:rotate(15deg)}60%{transform:rotate(-20deg)}80%{transform:rotate(-52deg)}100%{transform:rotate(-35deg)}}
-@keyframes ksh{0%{transform:rotate(15deg)}15%{transform:rotate(28deg)}30%{transform:rotate(22deg)}45%{transform:rotate(100deg)}60%{transform:rotate(108deg)}80%{transform:rotate(55deg)}100%{transform:rotate(15deg)}}
-@keyframes kft{0%{transform:rotate(-15deg)}15%{transform:rotate(0deg)}30%{transform:rotate(35deg)}45%{transform:rotate(38deg)}60%{transform:rotate(15deg)}80%{transform:rotate(-12deg)}100%{transform:rotate(-15deg)}}
-@keyframes kua{0%{transform:rotate(38deg)}25%{transform:rotate(-5deg)}50%{transform:rotate(-62deg)}75%{transform:rotate(-8deg)}100%{transform:rotate(38deg)}}
-@keyframes kfo{0%{transform:rotate(-82deg)}25%{transform:rotate(-92deg)}50%{transform:rotate(-104deg)}75%{transform:rotate(-92deg)}100%{transform:rotate(-82deg)}}
-@keyframes kbd{0%{transform:translateY(0)}15%{transform:translateY(1.6px)}30%{transform:translateY(-2.6px)}50%{transform:translateY(0)}65%{transform:translateY(1.6px)}80%{transform:translateY(-2.6px)}100%{transform:translateY(0)}}
-#run .tro{animation:trob .5s ease-in-out infinite alternate}
-@keyframes trob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
-#run .sp{animation:sp .35s linear infinite alternate}
-@keyframes sp{from{opacity:.2}to{opacity:1}}
+#run .stage{position:relative;width:340px;max-width:100%;height:226px;overflow:hidden}
+#run .stage svg{display:block}
+#run .rays{animation:rayspin 9s linear infinite}
+@keyframes rayspin{to{transform:rotate(360deg)}}
+#run .twk{animation:twk .6s ease-in-out infinite alternate}
+@keyframes twk{from{opacity:.25}to{opacity:1}}
 #run .rt{font-weight:900;letter-spacing:.22em;font-size:18px}
 #run .rs{color:#9a9aae;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
 .note{margin:0 0 4px;font-size:11px;color:#9a9aae;letter-spacing:.05em;text-transform:uppercase}
@@ -544,51 +520,151 @@ function showNow(d,flip,intro){
 let busy=false, chg=false, retryN=0, retryT=null;
 function scheduleRetry(){ if(retryN>=4) return; clearTimeout(retryT); retryN++; retryT=setTimeout(()=>load(true),4000*retryN) }
 /* ---- refresh animation: runners racing up a staircase to catch the trophy ---- */
-(function buildRace(){
-  const W=340,G=180,SW=32,SH=16,N=8,X0=40,XMAX=290,RW=34;
-  // staircase + trophy
-  let d="M"+X0+" "+G, nose="";
-  for(let k=1;k<=N;k++){ const x=X0+SW*(k-1); d+=" V"+(G-SH*k)+" H"+(x+SW);
-    nose+=`<rect x="${x}" y="${G-SH*k}" width="${SW}" height="3" fill="${k%2?"#e10600":"#fff"}"/>`; }
+/* ---- refresh animation: runners climbing a staircase to catch the trophy ----
+   Procedural: every foot is planted on its own step (2-bone leg IK), the body rises with each stride, the arms swing
+   against the legs, dust puffs on every landing, and the winner leaps for the trophy in a burst of confetti. */
+const RACE=(function(){
+  const W=340,H=226,G=216,SW=21,SH=10.5,N=12,X0=44,L1=17,L2=17,HIPH=24.5,NS="http://www.w3.org/2000/svg", PY=G-SH*N;   // PY = height of the top platform
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), sm=p=>p*p*(3-2*p), lerp=(a,b,p)=>a+(b-a)*p;
+  const dk=(h,f)=>"#"+[1,3,5].map(i=>Math.round(parseInt(h.substr(i,2),16)*f).toString(16).padStart(2,"0")).join("");
+  const contact=m=>({x:X0+SW*(m-.5),y:G-SH*clamp(m,0,N)});
+  const surf=x=>x<X0?G:G-SH*Math.min(N,Math.floor((x-X0)/SW)+1);
+  const f1=n=>n.toFixed(1);
+  function ik(hx,hy,tx,ty){                                           // two-bone leg: hip -> knee -> ankle
+    let dx=tx-hx,dy=ty-hy,r=Math.hypot(dx,dy); const mx=L1+L2-.25; if(r>mx){ dx*=mx/r; dy*=mx/r; r=mx } if(r<8) r=8;
+    const a=(r*r+L1*L1-L2*L2)/(2*r), h=Math.sqrt(Math.max(0,L1*L1-a*a)), ux=dx/r, uy=dy/r;
+    return {kx:hx+ux*a+uy*h,ky:hy+uy*a-ux*h,ax:hx+dx,ay:hy+dy};      // knee bends forward (to the right)
+  }
+  function foot(f,u){                                                 // where foot f is at stride-time u (planted, then swinging to the step 2 ahead)
+    let m=Math.floor(u); if(((m%2)+2)%2!==f) m-=1;
+    const ph=u-m, c0=contact(m);
+    if(ph<1.15) return {x:c0.x,y:c0.y,ang:0};
+    const c1=contact(m+2), p=(ph-1.15)/.85, e=sm(p);
+    return {x:lerp(c0.x,c1.x,e),y:lerp(c0.y,c1.y,e)-11*Math.sin(Math.PI*p),ang:25-40*p};
+  }
+  function hipAt(u){
+    const uu=clamp(u,0,N), fl=Math.floor(uu), fr=uu-fl, rise=SH*(fl+sm(clamp((fr-.15)/.85,0,1)));
+    const bob=(u>0&&u<N+1)?1.3*Math.sin(2*Math.PI*u):0;
+    return {x:X0+SW*u-SW*.5-9,y:G-rise-HIPH+bob};
+  }
+  // ---------- static scene ----------
+  let d="M"+X0+" "+G, tops="", risers="", posts="";
+  for(let k=1;k<=N;k++){ const x=X0+SW*(k-1), y=G-SH*k;
+    d+=" V"+y+" H"+(x+SW);
+    tops+=`<rect x="${x}" y="${y}" width="${SW}" height="2.4" fill="${k%2?"#e8e8f4":"#ff4a3d"}" opacity=".95"/>`;
+    risers+=`<rect x="${x}" y="${y+2.4}" width="${SW}" height="${SH-2.4}" fill="rgba(0,0,0,.28)"/>`; }
+  for(let k=0;k<=N;k+=2){ const x=X0+SW*k+SW*.5, y=G-SH*Math.max(k,0)-34; posts+=`<line x1="${x}" y1="${y}" x2="${x}" y2="${y+34}" stroke="#44445e" stroke-width="1.3"/>`; }
   d+=" H"+W+" V"+G+" Z";
-  const stairs=`<svg class="stairs" viewBox="0 0 ${W} 190" width="${W}" height="190">
-    <rect x="0" y="${G}" width="${W}" height="6" fill="#33334a"/>
-    <path d="${d}" fill="#262636" stroke="#4a4a66" stroke-width="1.5"/>${nose}
-    <circle cx="328" cy="30" r="27" fill="#ffd23f" opacity=".13" class="sp"/>
-    <g class="tro"><g transform="translate(196 0) scale(.8)">
+  const rail=`<line x1="${X0}" y1="${G-34}" x2="${X0+SW*N}" y2="${G-SH*N-34}" stroke="#5b5b7a" stroke-width="2" stroke-linecap="round"/>`;
+  let rays=""; for(let i=0;i<12;i++){ rays+=`<path d="M328 ${PY-20}L${328+34*Math.cos(i*Math.PI/6-.09)} ${PY-20+34*Math.sin(i*Math.PI/6-.09)}L${328+34*Math.cos(i*Math.PI/6+.09)} ${PY-20+34*Math.sin(i*Math.PI/6+.09)}Z" fill="#ffd23f" opacity=".18"/>` }
+  const stage=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+    <defs><linearGradient id="stg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d2d44"/><stop offset="1" stop-color="#1b1b2a"/></linearGradient>
+      <radialGradient id="tg"><stop offset="0" stop-color="#ffe27a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient></defs>
+    <rect x="0" y="${G}" width="${W}" height="${H-G}" fill="#2a2a3d"/><rect x="0" y="${G}" width="${W}" height="2" fill="#4a4a66"/>
+    <circle cx="328" cy="${PY-20}" r="46" fill="url(#tg)"/><g class="rays" style="transform-origin:328px ${PY-20}px">${rays}</g>
+    <path d="${d}" fill="url(#stg)" stroke="#4a4a66" stroke-width="1.2"/>${risers}${tops}${rail}${posts}
+    <rect x="${X0+SW*N+6}" y="${G-SH*N-3}" width="30" height="3" rx="1" fill="#6b6b88"/>
+    <g id="tro"><g transform="translate(196 ${PY-52}) scale(.8)">
       <path d="M151 22h28v14a14 14 0 0 1-28 0z" fill="#ffd23f" stroke="#b8860b" stroke-width="2"/>
       <path d="M151 26c-11 0-11 14 0 14M179 26c11 0 11 14 0 14" fill="none" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/>
       <rect x="162" y="50" width="6" height="9" fill="#ffd23f" stroke="#b8860b" stroke-width="1.5"/>
       <rect x="154" y="59" width="22" height="6" rx="2" fill="#ffd23f" stroke="#b8860b" stroke-width="1.5"/>
       <path d="M157 26v9" stroke="#fff6c7" stroke-width="2.5" stroke-linecap="round"/></g></g>
-    <g class="sp" fill="#fff6c7"><path d="M300 10l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M336 24l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/></g></svg>`;
-  // keyframes: the runner climbs one step each time it reaches a step edge, leaps at the top to grab the trophy
-  let kf="@keyframes climb{0%{transform:translateY(0);opacity:0}4%{opacity:1}";
-  for(let k=1;k<=N;k++){ const f=(X0+SW*(k-1)-RW/2)/XMAX;
-    kf+=`${((f-0.02)*100).toFixed(2)}%{transform:translateY(${-SH*(k-1)}px)}${((f+0.012)*100).toFixed(2)}%{transform:translateY(${-SH*k}px)}`; }
-  kf+=`93%{transform:translateY(${-SH*N}px);opacity:1}97%{transform:translateY(${-SH*N-22}px);opacity:1}100%{transform:translateY(${-SH*N-22}px);opacity:0}}`;
-  const st=document.createElement("style"); st.textContent=kf; document.head.appendChild(st);
-  const dk=(h,f)=>"#"+[1,3,5].map(i=>Math.round(parseInt(h.substr(i,2),16)*f).toString(16).padStart(2,"0")).join("");
-  // a limb is a jointed chain: thigh > shin > foot, shoulder > elbow > hand (each joint swings on its own timing)
-  const leg=(cls,skin,shorts)=>`<g class="th ${cls}"><line x1="50" y1="58" x2="50" y2="68" stroke="${shorts}" stroke-width="11" stroke-linecap="round"/><line x1="50" y1="66" x2="50" y2="76" stroke="${skin}" stroke-width="8" stroke-linecap="round"/>
-    <g class="sh ${cls}"><line x1="50" y1="76" x2="50" y2="92" stroke="${skin}" stroke-width="6.5" stroke-linecap="round"/><line x1="50" y1="86" x2="50" y2="91" stroke="#fff" stroke-width="7" stroke-linecap="butt"/>
-      <g class="ft ${cls}"><path d="M46 90h11q6 2 6 6H46z" fill="#fff" stroke="#9aa3b5" stroke-width=".8"/><rect x="46" y="95" width="17" height="1.6" fill="#e10600"/></g></g></g>`;
-  const arm=(cls,skin,shirt)=>`<g class="ua ${cls}"><line x1="62" y1="32" x2="62" y2="46" stroke="${shirt}" stroke-width="6" stroke-linecap="round"/>
-    <g class="fo ${cls}"><line x1="62" y1="46" x2="62" y2="58" stroke="${skin}" stroke-width="5" stroke-linecap="round"/><circle cx="62" cy="60" r="3" fill="${skin}"/></g></g>`;
-  const man=(shirt,skin,hair)=>{ const sf=dk(skin,.8), sh=dk(shirt,.78);
-    return `<svg viewBox="34 2 52 98" width="${RW}" height="64">`+
-      arm("fr",sf,sh)+leg("fr",sf,"#12121a")+
-      `<path d="M62 30L50 58" stroke="${shirt}" stroke-width="14" stroke-linecap="round"/><path d="M59 38l-4 9" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".85"/>
-       <rect x="42" y="54" width="16" height="9" rx="3" fill="#1b1b26"/>`+
-      leg("nr",skin,"#1b1b26")+
-      `<circle cx="68" cy="17" r="9.5" fill="${skin}"/><path d="M58 16a10 10 0 0 1 19-5c-5-3-13-2-19 5z" fill="${hair}"/><path d="M59 14a10 10 0 0 1 18-2" stroke="${shirt}" stroke-width="2.6" fill="none"/><circle cx="65" cy="19" r="2" fill="${dk(skin,.85)}"/><circle cx="72.5" cy="16.5" r="1.5" fill="#222"/><path d="M73 22q2 1 4 0" stroke="#7a4a2a" stroke-width="1" fill="none" stroke-linecap="round"/>`+
-      arm("nr",skin,shirt)+`</svg>`; };
-  // six competitors: [shirt, skin, hair, climb seconds, start offset, lane, stride seconds, stride phase]
-  const crew=[["#e10600","#f1c27d","#2b1d12",3.4,0,0,.56,0],["#3b82f6","#d9a066","#111111",3.0,-1.2,2,.52,.35],["#22c55e","#f1c27d","#6b3f1d",3.8,-2.1,4,.6,.7],
-              ["#ff8000","#c68642","#222222",3.2,-0.6,1,.54,.15],["#a855f7","#f1c27d","#111111",3.6,-2.9,3,.58,.55],["#27f4d2","#e0ac69","#3b2314",2.9,-1.8,5,.5,.85]];
-  $("rstage").innerHTML=stairs+crew.map(c=>`<div class="rn" style="bottom:${10+c[5]}px;z-index:${10-c[5]}"><div class="rx" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="ry" style="--d:${c[3]}s;--dl:${c[4]}s"><div class="shd"></div><div class="bd" style="--T:${c[6]}s;--o:${c[7]}">${man(c[0],c[1],c[2])}</div></div></div></div>`).join("");
+    <g class="twk" fill="#fff6c7"><path d="M300 ${PY-34}l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M338 ${PY-16}l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/></g>
+    <circle id="tfl" cx="328" cy="${PY-18}" r="0" fill="none" stroke="#fff6c7" stroke-width="3" opacity="0"/>
+    <g id="runners"></g><g id="puffs"></g><g id="conf"></g></svg>`;
+  $("rstage").innerHTML=stage;
+  const svg=$("rstage").firstElementChild, mk=(tag,att,par)=>{ const e=document.createElementNS(NS,tag); for(const k in att) e.setAttribute(k,att[k]); par.appendChild(e); return e };
+  const gRun=svg.querySelector("#runners"), gPuf=svg.querySelector("#puffs"), gCon=svg.querySelector("#conf"), tfl=svg.querySelector("#tfl");
+  // ---------- runners ----------
+  // [shirt, skin, hair, seconds per step, start offset, lane]
+  const crew=[["#e10600","#f1c27d","#2b1d12",.30,0,0],["#3b82f6","#d9a066","#111111",.34,-1.1,1],["#22c55e","#f1c27d","#6b3f1d",.38,-2.3,2],
+              ["#ff8000","#c68642","#222222",.32,-3.4,3],["#a855f7","#f1c27d","#111111",.36,-4.4,4],["#27f4d2","#e0ac69","#3b2314",.29,-5.5,5]];
+  const LP=.7, HOLD=.3, GAP=.45;
+  const R=crew.map(c=>{
+    const g=mk("g",{},gRun), sk=c[1], skf=dk(c[1],.78), sh=c[0], shf=dk(c[0],.74);
+    const o={c,T:c[3],off:c[4],P:15*c[3]+LP+HOLD+GAP,g,prevU:-9,caught:false};
+    o.shadow=mk("ellipse",{rx:9,ry:2.2,fill:"rgba(0,0,0,.42)"},g);
+    const limb=(skin,shorts,sock)=>({th:mk("path",{fill:"none",stroke:shorts,"stroke-width":8.6,"stroke-linecap":"round"},g),
+      th2:mk("path",{fill:"none",stroke:skin,"stroke-width":6.6,"stroke-linecap":"round"},g),
+      sn:mk("path",{fill:"none",stroke:skin,"stroke-width":5.4,"stroke-linecap":"round"},g),
+      sk:mk("path",{fill:"none",stroke:sock,"stroke-width":5.6,"stroke-linecap":"butt"},g),
+      sho:mk("path",{d:"M-4 -4.2L5 -4.2Q11 -3.4 11 0L-4 0Z",fill:"#fff",stroke:"#9aa3b5","stroke-width":.7},g)});
+    const arm=(skin,sleeve)=>({u:mk("path",{fill:"none",stroke:sleeve,"stroke-width":5.2,"stroke-linecap":"round"},g),
+      f:mk("path",{fill:"none",stroke:skin,"stroke-width":4.2,"stroke-linecap":"round"},g),h:mk("circle",{r:2.5,fill:skin},g)});
+    // draw order: far arm, far leg, body, near leg, head, near arm
+    o.armF=arm(skf,shf); o.legF=limb(skf,"#12121a","#d9dce6");
+    o.torso=mk("path",{fill:"none",stroke:sh,"stroke-width":11,"stroke-linecap":"round"},g);
+    o.pants=mk("path",{fill:"none",stroke:"#1b1b26","stroke-width":10.4,"stroke-linecap":"round"},g);
+    o.stripe=mk("path",{fill:"none",stroke:"#fff","stroke-width":1.6,"stroke-linecap":"round",opacity:.85},g);
+    o.legN=limb(sk,"#1b1b26","#fff");
+    o.hair=mk("circle",{r:6.3,fill:c[2]},g); o.head=mk("circle",{r:5.5,fill:sk},g);
+    o.band=mk("path",{fill:"none",stroke:sh,"stroke-width":2,"stroke-linecap":"round"},g); o.eye=mk("circle",{r:.95,fill:"#222"},g);
+    o.armN=arm(sk,sh);
+    return o;
+  });
+  const setLeg=(L,hx,hy,ft)=>{                                         // ft = {x,y,ang}
+    const ax=ft.x-1, ay=ft.y-4.2, q=ik(hx,hy,ax,ay), tx=lerp(hx,q.kx,.55), ty=lerp(hy,q.ky,.55);
+    L.th.setAttribute("d",`M${f1(hx)} ${f1(hy)}L${f1(tx)} ${f1(ty)}`);
+    L.th2.setAttribute("d",`M${f1(tx)} ${f1(ty)}L${f1(q.kx)} ${f1(q.ky)}`);
+    L.sn.setAttribute("d",`M${f1(q.kx)} ${f1(q.ky)}L${f1(q.ax)} ${f1(q.ay)}`);
+    L.sk.setAttribute("d",`M${f1(lerp(q.kx,q.ax,.62))} ${f1(lerp(q.ky,q.ay,.62))}L${f1(q.ax)} ${f1(q.ay)}`);
+    L.sho.setAttribute("transform",`translate(${f1(ft.x)} ${f1(ft.y)}) rotate(${f1(ft.ang)})`);
+  };
+  const setArm=(A,sx,sy,a,b)=>{                                        // a,b in degrees from "straight down"; positive = forward / up
+    const r=Math.PI/180, ex=sx+10.5*Math.sin(a*r), ey=sy+10.5*Math.cos(a*r), hx=ex+10*Math.sin(b*r), hy=ey+10*Math.cos(b*r);
+    A.u.setAttribute("d",`M${f1(sx)} ${f1(sy)}L${f1(ex)} ${f1(ey)}`); A.f.setAttribute("d",`M${f1(ex)} ${f1(ey)}L${f1(hx)} ${f1(hy)}`);
+    A.h.setAttribute("cx",f1(hx)); A.h.setAttribute("cy",f1(hy));
+  };
+  // dust puffs and confetti (small object pools)
+  const puffs=Array.from({length:28},()=>({e:mk("ellipse",{rx:2,ry:1.2,fill:"#cfd2e4",opacity:0},gPuf),t:-9,x:0,y:0}));
+  const conf=Array.from({length:40},()=>({e:mk("rect",{width:3,height:3,opacity:0},gCon),t:-9,x:0,y:0,vx:0,vy:0,r:0}));
+  let pi=0,ci=0,flashT=-9;
+  const dust=(x,y,now)=>{ const p=puffs[pi++%puffs.length]; p.t=now; p.x=x; p.y=y };
+  const burst=now=>{ flashT=now; const cols=["#ffd23f","#e10600","#fff","#27f4d2","#a855f7","#3b82f6"];
+    for(let i=0;i<16;i++){ const c=conf[ci++%conf.length]; c.t=now; c.x=326+Math.random()*6; c.y=PY-24; const an=-Math.PI/2+(Math.random()-.5)*2.6, sp=45+Math.random()*70;
+      c.vx=Math.cos(an)*sp; c.vy=Math.sin(an)*sp; c.r=Math.random()*360; c.e.setAttribute("fill",cols[i%cols.length]) } };
+  // ---------- one frame ----------
+  function draw(now){
+    R.forEach(o=>{
+      const T=o.T, t=((now-o.off)%o.P+o.P)%o.P, tRun=15*T;
+      let u, ph="run", q=0;
+      if(t<=tRun) u=-2+t/T; else if(t<=tRun+LP){ ph="leap"; q=(t-tRun)/LP; u=N+1 } else if(t<=tRun+LP+HOLD){ ph="hold"; q=1; u=N+1 } else { ph="gap"; u=N+1 }
+      if(ph==="gap"){ o.g.setAttribute("opacity",0); o.prevU=-9; o.caught=false; return }
+      o.g.setAttribute("opacity",ph==="hold"?1-(t-tRun-LP)/HOLD:1);
+      if(ph==="run"&&Math.floor(u)>Math.floor(o.prevU)&&o.prevU>-3){ const m=Math.floor(u); if(m>=1&&m<=N+1){ const c=contact(m); dust(c.x-2,c.y,now) } }
+      o.prevU=u; if(ph==="run") o.caught=false;
+      let h=hipAt(u), hx=h.x, hy=h.y, lean=16+3*Math.sin(2*Math.PI*u), f0=foot(0,u), f1_=foot(1,u), armA, armB;
+      if(ph==="run"){ const w=Math.sin(Math.PI*u); armA=[18+38*w,18+38*w+72]; armB=[18-38*w,18-38*w+72] }
+      else{                                                           // the leap: jump up and forward, both arms reach for the trophy, knees tuck
+        const e=sm(q); hx+=12*e; hy-=26*Math.sin(Math.PI*clamp(q,0,1)); lean=lerp(16,4,e);
+        const tk=sm(clamp(q*2.5,0,1)), air=ph==="leap"?Math.sin(Math.PI*q):0;
+        f0={x:lerp(f0.x,hx+7,tk*air),y:lerp(f0.y,hy+24,tk*air),ang:lerp(f0.ang,30,tk*air)}; f1_={x:lerp(f1_.x,hx-2,tk*air),y:lerp(f1_.y,hy+22,tk*air),ang:lerp(f1_.ang,45,tk*air)};
+        const up=lerp(20,150,e); armA=[up,up+8]; armB=[up-14,up-6];
+        if(ph==="leap"&&q>.55&&!o.caught){ o.caught=true; burst(now) }
+      }
+      const lr=lean*Math.PI/180, sx=hx+Math.sin(lr)*21, sy=hy-Math.cos(lr)*21, hdx=sx+3, hdy=sy-7.5;
+      o.shadow.setAttribute("cx",f1(hx)); o.shadow.setAttribute("cy",f1(surf(hx)+.5)); o.shadow.setAttribute("opacity",ph==="leap"?Math.max(.25,1-Math.sin(Math.PI*q)):1);
+      setArm(o.armF,sx,sy,armB[0],armB[1]); setLeg(o.legF,hx,hy,f1_);
+      o.torso.setAttribute("d",`M${f1(hx)} ${f1(hy)}L${f1(sx)} ${f1(sy)}`);
+      o.pants.setAttribute("d",`M${f1(hx-1)} ${f1(hy+1)}L${f1(hx+1)} ${f1(hy+1)}`);
+      o.stripe.setAttribute("d",`M${f1(lerp(hx,sx,.55))} ${f1(lerp(hy,sy,.55))}L${f1(lerp(hx,sx,.2)-.5)} ${f1(lerp(hy,sy,.2))}`);
+      setLeg(o.legN,hx,hy,f0);
+      o.hair.setAttribute("cx",f1(hdx-1.2)); o.hair.setAttribute("cy",f1(hdy-1.1)); o.head.setAttribute("cx",f1(hdx+.9)); o.head.setAttribute("cy",f1(hdy+.5));
+      o.band.setAttribute("d",`M${f1(hdx-4.6)} ${f1(hdy-.9)}Q${f1(hdx+1)} ${f1(hdy-5.4)} ${f1(hdx+5.9)} ${f1(hdy-1.6)}`);
+      o.eye.setAttribute("cx",f1(hdx+3.6)); o.eye.setAttribute("cy",f1(hdy+.2));
+      setArm(o.armN,sx,sy,armA[0],armA[1]);
+    });
+    puffs.forEach(p=>{ const a=(now-p.t)/.5; if(a<0||a>1){ p.e.setAttribute("opacity",0); return } p.e.setAttribute("cx",f1(p.x-a*5)); p.e.setAttribute("cy",f1(p.y-1-a*3)); p.e.setAttribute("rx",f1(2+a*5)); p.e.setAttribute("ry",f1(1.2+a*2.6)); p.e.setAttribute("opacity",(.55*(1-a)).toFixed(2)) });
+    conf.forEach(c=>{ const a=now-c.t; if(a<0||a>1){ c.e.setAttribute("opacity",0); return } const x=c.x+c.vx*a, y=c.y+c.vy*a+130*a*a;
+      c.e.setAttribute("transform",`translate(${f1(x)} ${f1(y)}) rotate(${f1(c.r+a*420)})`); c.e.setAttribute("opacity",(1-a*a).toFixed(2)) });
+    const fa=(now-flashT)/.55; if(fa>=0&&fa<=1){ tfl.setAttribute("r",f1(10+fa*40)); tfl.setAttribute("opacity",(.9*(1-fa)).toFixed(2)) } else tfl.setAttribute("opacity",0);
+  }
+  let raf=0;
+  const loop=()=>{ draw(performance.now()/1000); raf=requestAnimationFrame(loop) };
+  return {draw,start(){ if(!raf) loop() },stop(){ cancelAnimationFrame(raf); raf=0 }};
 })();
-function run(on){ $("run").hidden=!on }
+function run(on){ $("run").hidden=!on; if(on) RACE.start(); else RACE.stop() }
 async function load(silent,anim,fresh){
   if(demoBusy&&silent) return;                 // do not disturb a running preview
   if(busy){                                   // a refresh is already running: keep the runner going until it finishes
