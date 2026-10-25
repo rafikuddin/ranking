@@ -576,45 +576,52 @@ const RACE=(function(){
   $("rstage").innerHTML=stage;
   const svg=$("rstage").firstElementChild, mk=(tag,att,par)=>{ const e=document.createElementNS(NS,tag); for(const k in att) e.setAttribute(k,att[k]); par.appendChild(e); return e };
   const gRun=svg.querySelector("#runners"), gPuf=svg.querySelector("#puffs"), gCon=svg.querySelector("#conf"), tfl=svg.querySelector("#tfl");
-  // ---------- runners ----------
-  // [shirt, skin, hair, seconds per step, start offset, lane]
-  const crew=[["#e10600","#f1c27d","#2b1d12",.30,0,0],["#3b82f6","#d9a066","#111111",.34,-1.1,1],["#22c55e","#f1c27d","#6b3f1d",.38,-2.3,2],
-              ["#ff8000","#c68642","#222222",.32,-3.4,3],["#a855f7","#f1c27d","#111111",.36,-4.4,4],["#27f4d2","#e0ac69","#3b2314",.29,-5.5,5]];
-  const LP=.7, HOLD=.3, GAP=.45;
+  // ---------- runners: athletic men and women (tank top / sports bra, shorts, running shoes, ponytails, armband) ----------
+  const crew=[
+    {g:"m",top:"#f4f6fb",shorts:"#14141c",skin:"#e0a878",hair:"#24160d",shoe:"#3d4252",sole:"#ff7a2f",band:"#2ec4b6",T:.30,off:0},
+    {g:"f",top:"#e8262e",shorts:"#d91f2a",skin:"#e6a97c",hair:"#3a2418",shoe:"#8d93a3",sole:"#ff6f9a",tie:"#fff",T:.34,off:-1.1},
+    {g:"m",top:"#3b82f6",shorts:"#1b2440",skin:"#c68642",hair:"#111111",shoe:"#e9ecf5",sole:"#27f4d2",band:"#ff8000",T:.38,off:-2.3},
+    {g:"f",top:"#a855f7",shorts:"#7a2fc0",skin:"#f1c27d",hair:"#6b3f1d",shoe:"#2d2f3c",sole:"#ffd23f",tie:"#ffd23f",T:.32,off:-3.4},
+    {g:"m",top:"#ff8000",shorts:"#1a1a1a",skin:"#d9a066",hair:"#2b1d12",shoe:"#4a4f63",sole:"#ffffff",band:"#e10600",T:.36,off:-4.4},
+    {g:"f",top:"#14b8a6",shorts:"#102a2e",skin:"#c68642",hair:"#1a120b",shoe:"#e9ecf5",sole:"#14b8a6",tie:"#14b8a6",T:.29,off:-5.5}];
+  const LP=.7, HOLD=.3, GAP=.45, fx=n=>n.toFixed(1);
+  const seg=(x0,y0,x1,y1,w0,w1)=>{ const dx=x1-x0,dy=y1-y0,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l;       // a tapered limb piece
+    return `M${fx(x0+nx*w0/2)} ${fx(y0+ny*w0/2)}L${fx(x1+nx*w1/2)} ${fx(y1+ny*w1/2)}L${fx(x1-nx*w1/2)} ${fx(y1-ny*w1/2)}L${fx(x0-nx*w0/2)} ${fx(y0-ny*w0/2)}Z` };
   const R=crew.map(c=>{
-    const g=mk("g",{},gRun), sk=c[1], skf=dk(c[1],.78), sh=c[0], shf=dk(c[0],.74);
-    const o={c,T:c[3],off:c[4],P:15*c[3]+LP+HOLD+GAP,g,prevU:-9,caught:false};
+    const g=mk("g",{},gRun), sk=c.skin, skf=dk(c.skin,.76), shf=dk(c.shorts,.72), topf=dk(c.top,.8), shoef=dk(c.shoe,.78);
+    const o={c,T:c.T,off:c.off,P:15*c.T+LP+HOLD+GAP,g,prevU:-9,caught:false};
+    const P=(col,att)=>mk("path",Object.assign({fill:col},att||{}),g), PS=col=>P(col,{stroke:col,"stroke-width":.7,"stroke-linejoin":"round"});   // PS: filled piece with a hairline edge, so joints show no seams
     o.shadow=mk("ellipse",{rx:9,ry:2.2,fill:"rgba(0,0,0,.42)"},g);
-    const limb=(skin,shorts,sock)=>({th:mk("path",{fill:"none",stroke:shorts,"stroke-width":8.6,"stroke-linecap":"round"},g),
-      th2:mk("path",{fill:"none",stroke:skin,"stroke-width":6.6,"stroke-linecap":"round"},g),
-      sn:mk("path",{fill:"none",stroke:skin,"stroke-width":5.4,"stroke-linecap":"round"},g),
-      sk:mk("path",{fill:"none",stroke:sock,"stroke-width":5.6,"stroke-linecap":"butt"},g),
-      sho:mk("path",{d:"M-4 -4.2L5 -4.2Q11 -3.4 11 0L-4 0Z",fill:"#fff",stroke:"#9aa3b5","stroke-width":.7},g)});
-    const arm=(skin,sleeve)=>({u:mk("path",{fill:"none",stroke:sleeve,"stroke-width":5.2,"stroke-linecap":"round"},g),
-      f:mk("path",{fill:"none",stroke:skin,"stroke-width":4.2,"stroke-linecap":"round"},g),h:mk("circle",{r:2.5,fill:skin},g)});
-    // draw order: far arm, far leg, body, near leg, head, near arm
-    o.armF=arm(skf,shf); o.legF=limb(skf,"#12121a","#d9dce6");
-    o.torso=mk("path",{fill:"none",stroke:sh,"stroke-width":11,"stroke-linecap":"round"},g);
-    o.pants=mk("path",{fill:"none",stroke:"#1b1b26","stroke-width":10.4,"stroke-linecap":"round"},g);
-    o.stripe=mk("path",{fill:"none",stroke:"#fff","stroke-width":1.6,"stroke-linecap":"round",opacity:.85},g);
-    o.legN=limb(sk,"#1b1b26","#fff");
-    o.hair=mk("circle",{r:6.3,fill:c[2]},g); o.head=mk("circle",{r:5.5,fill:sk},g);
-    o.band=mk("path",{fill:"none",stroke:sh,"stroke-width":2,"stroke-linecap":"round"},g); o.eye=mk("circle",{r:.95,fill:"#222"},g);
-    o.armN=arm(sk,sh);
+    const arm=(skin)=>({u:PS(skin),f:PS(skin),el:mk("circle",{r:2.2,fill:skin},g),h:mk("circle",{r:2.7,fill:skin},g)});
+    const leg=(skin,shorts,sock,shoe,sole)=>({th:PS(shorts),th2:PS(skin),kn:mk("circle",{r:3.2,fill:skin},g),ca:PS(skin),sn:P(skin),sk:PS(sock),
+      sho:mk("g",{},g)});
+    const mkShoe=(L,shoe,sole)=>{ mk("path",{d:"M-4.2 -1.3L-4.6 -5.6Q-1 -6.5 2.2 -5.1L8.6 -3.3Q11.3 -2.5 11.5 -0.7L11.5 -1.2L-4.2 -1.2Z",fill:shoe},L.sho); mk("path",{d:"M-4.7 -1.9L11.6 -1.9L11.6 0.1Q11.6 .6 11 .6L-4 .6Q-4.7 .6 -4.7 0Z",fill:sole},L.sho) };
+    // draw order: far arm, far leg, body, near leg, ponytail, head, near arm
+    o.armF=arm(skf); o.legF=leg(skf,shf,"#cfd3e0"); mkShoe(o.legF,shoef,dk(c.sole,.8));
+    o.skin=PS(sk); o.waist=PS(c.shorts); o.top=PS(c.top);
+    o.logo=P(c.g==="m"?dk(c.top,.82):"none",{opacity:.9});
+    o.legN=leg(sk,c.shorts,"#fff"); mkShoe(o.legN,c.shoe,c.sole);
+    o.neck=P(skf); o.tail=c.g==="f"?[P(c.hair),P(c.hair),P(c.hair)]:null; o.tie=c.g==="f"?mk("circle",{r:1.5,fill:c.tie},g):null;
+    o.hair=mk("ellipse",{rx:6.2,ry:6.2,fill:c.hair},g); o.head=mk("ellipse",{rx:5.2,ry:5.9,fill:sk},g); o.ear=mk("circle",{r:1.35,fill:dk(sk,.85)},g);
+    o.nose=P(dk(sk,.9)); o.front=P(c.hair); o.brow=P("none",{stroke:dk(c.hair,.9),"stroke-width":.9,"stroke-linecap":"round"}); o.eye=mk("circle",{r:.85,fill:"#1b1b22"},g);
+    o.mouth=P("none",{stroke:"#7a3b2c","stroke-width":.7,"stroke-linecap":"round"});
+    o.armN=arm(sk); o.band=c.g==="m"?[P(c.band),P("#10131c")]:null;
     return o;
   });
-  const setLeg=(L,hx,hy,ft)=>{                                         // ft = {x,y,ang}
-    const ax=ft.x-1, ay=ft.y-4.2, q=ik(hx,hy,ax,ay), tx=lerp(hx,q.kx,.55), ty=lerp(hy,q.ky,.55);
-    L.th.setAttribute("d",`M${f1(hx)} ${f1(hy)}L${f1(tx)} ${f1(ty)}`);
-    L.th2.setAttribute("d",`M${f1(tx)} ${f1(ty)}L${f1(q.kx)} ${f1(q.ky)}`);
-    L.sn.setAttribute("d",`M${f1(q.kx)} ${f1(q.ky)}L${f1(q.ax)} ${f1(q.ay)}`);
-    L.sk.setAttribute("d",`M${f1(lerp(q.kx,q.ax,.62))} ${f1(lerp(q.ky,q.ay,.62))}L${f1(q.ax)} ${f1(q.ay)}`);
-    L.sho.setAttribute("transform",`translate(${f1(ft.x)} ${f1(ft.y)}) rotate(${f1(ft.ang)})`);
+  const setLeg=(L,hx,hy,ft,shortsLen)=>{
+    const ax=ft.x-1, ay=ft.y-4.4, q=ik(hx,hy,ax,ay), mx=lerp(hx,q.kx,shortsLen), my=lerp(hy,q.ky,shortsLen);
+    const cx=lerp(q.kx,q.ax,.3), cy=lerp(q.ky,q.ay,.3), sx_=lerp(q.kx,q.ax,.72), sy_=lerp(q.ky,q.ay,.72);
+    L.th.setAttribute("d",seg(hx,hy,mx,my,10.6,9.4)); L.th2.setAttribute("d",seg(mx,my,q.kx,q.ky,9.0,6.6));
+    L.kn.setAttribute("cx",fx(q.kx)); L.kn.setAttribute("cy",fx(q.ky));
+    L.ca.setAttribute("d",seg(q.kx,q.ky,cx+.3,cy,6.5,6.9)+seg(cx,cy,q.ax,q.ay,6.9,3.7)); L.sn.setAttribute("d","");
+    L.sk.setAttribute("d",seg(sx_,sy_,q.ax,q.ay,4.4,4.1));
+    L.sho.setAttribute("transform",`translate(${fx(ft.x)} ${fx(ft.y)}) rotate(${fx(ft.ang)})`);
   };
-  const setArm=(A,sx,sy,a,b)=>{                                        // a,b in degrees from "straight down"; positive = forward / up
-    const r=Math.PI/180, ex=sx+10.5*Math.sin(a*r), ey=sy+10.5*Math.cos(a*r), hx=ex+10*Math.sin(b*r), hy=ey+10*Math.cos(b*r);
-    A.u.setAttribute("d",`M${f1(sx)} ${f1(sy)}L${f1(ex)} ${f1(ey)}`); A.f.setAttribute("d",`M${f1(ex)} ${f1(ey)}L${f1(hx)} ${f1(hy)}`);
-    A.h.setAttribute("cx",f1(hx)); A.h.setAttribute("cy",f1(hy));
+  const setArm=(A,sx,sy,a,b)=>{
+    const r=Math.PI/180, ex=sx+11*Math.sin(a*r), ey=sy+11*Math.cos(a*r), hx=ex+10.5*Math.sin(b*r), hy=ey+10.5*Math.cos(b*r);
+    A.u.setAttribute("d",seg(sx,sy,ex,ey,5.8,4.6)); A.f.setAttribute("d",seg(ex,ey,hx,hy,4.6,3.5));
+    A.el.setAttribute("cx",fx(ex)); A.el.setAttribute("cy",fx(ey)); A.h.setAttribute("cx",fx(hx)); A.h.setAttribute("cy",fx(hy));
+    return {ex,ey,hx,hy};
   };
   // dust puffs and confetti (small object pools)
   const puffs=Array.from({length:28},()=>({e:mk("ellipse",{rx:2,ry:1.2,fill:"#cfd2e4",opacity:0},gPuf),t:-9,x:0,y:0}));
@@ -624,36 +631,51 @@ const RACE=(function(){
   const burst=now=>{ flashT=now; const cols=["#ffd23f","#e10600","#fff","#27f4d2","#a855f7","#3b82f6"];
     for(let i=0;i<16;i++){ const c=conf[ci++%conf.length]; c.t=now; c.x=326+Math.random()*6; c.y=PY-24; const an=-Math.PI/2+(Math.random()-.5)*2.6, sp=45+Math.random()*70;
       c.vx=Math.cos(an)*sp; c.vy=Math.sin(an)*sp; c.r=Math.random()*360; c.e.setAttribute("fill",cols[i%cols.length]) } };
+  const wdt=t=>t<.35?lerp(8.8,7.2,t/.35):t<.78?lerp(7.2,9.8,(t-.35)/.43):lerp(9.8,8.2,(t-.78)/.22);
   // ---------- one frame ----------
   function draw(now){
     R.forEach(o=>{
-      const T=o.T, t=((now-o.off)%o.P+o.P)%o.P, tRun=15*T;
+      const c=o.c, T=o.T, t=((now-o.off)%o.P+o.P)%o.P, tRun=15*T;
       let u, ph="run", q=0;
       if(t<=tRun) u=-2+t/T; else if(t<=tRun+LP){ ph="leap"; q=(t-tRun)/LP; u=N+1 } else if(t<=tRun+LP+HOLD){ ph="hold"; q=1; u=N+1 } else { ph="gap"; u=N+1 }
       if(ph==="gap"){ o.g.setAttribute("opacity",0); o.prevU=-9; o.caught=false; return }
       o.g.setAttribute("opacity",ph==="hold"?1-(t-tRun-LP)/HOLD:1);
-      if(ph==="run"&&Math.floor(u)>Math.floor(o.prevU)&&o.prevU>-3){ const m=Math.floor(u); if(m>=1&&m<=N+1){ const c=contact(m); dust(c.x-2,c.y,now) } }
+      if(ph==="run"&&Math.floor(u)>Math.floor(o.prevU)&&o.prevU>-3){ const m=Math.floor(u); if(m>=1&&m<=N+1){ const cc=contact(m); dust(cc.x-2,cc.y,now) } }
       o.prevU=u; if(ph==="run") o.caught=false;
-      let h=hipAt(u), hx=h.x, hy=h.y, lean=16+3*Math.sin(2*Math.PI*u), f0=foot(0,u), f1_=foot(1,u), armA, armB;
-      if(ph==="run"){ const w=Math.sin(Math.PI*u); armA=[18+38*w,18+38*w+72]; armB=[18-38*w,18-38*w+72] }
+      let h=hipAt(u), hx=h.x, hy=h.y, lean=19+3*Math.sin(2*Math.PI*u), f0=foot(0,u), f1_=foot(1,u), armA, armB;
+      if(ph==="run"){ const w=Math.sin(Math.PI*u); armA=[22+46*w,22+46*w+78]; armB=[22-46*w,22-46*w+78] }
       else{                                                           // the leap: jump up and forward, both arms reach for the trophy, knees tuck
-        const e=sm(q); hx+=12*e; hy-=26*Math.sin(Math.PI*clamp(q,0,1)); lean=lerp(16,4,e);
+        const e=sm(q); hx+=12*e; hy-=26*Math.sin(Math.PI*clamp(q,0,1)); lean=lerp(19,4,e);
         const tk=sm(clamp(q*2.5,0,1)), air=ph==="leap"?Math.sin(Math.PI*q):0;
         f0={x:lerp(f0.x,hx+7,tk*air),y:lerp(f0.y,hy+24,tk*air),ang:lerp(f0.ang,30,tk*air)}; f1_={x:lerp(f1_.x,hx-2,tk*air),y:lerp(f1_.y,hy+22,tk*air),ang:lerp(f1_.ang,45,tk*air)};
-        const up=lerp(20,150,e); armA=[up,up+8]; armB=[up-14,up-6];
+        const up=lerp(22,150,e); armA=[up,up+8]; armB=[up-14,up-6];
         if(ph==="leap"&&q>.55&&!o.caught){ o.caught=true; burst(now) }
       }
-      const lr=lean*Math.PI/180, sx=hx+Math.sin(lr)*21, sy=hy-Math.cos(lr)*21, hdx=sx+3, hdy=sy-7.5;
-      o.shadow.setAttribute("cx",f1(hx)); o.shadow.setAttribute("cy",f1(surf(hx)+.5)); o.shadow.setAttribute("opacity",ph==="leap"?Math.max(.25,1-Math.sin(Math.PI*q)):1);
-      setArm(o.armF,sx,sy,armB[0],armB[1]); setLeg(o.legF,hx,hy,f1_);
-      o.torso.setAttribute("d",`M${f1(hx)} ${f1(hy)}L${f1(sx)} ${f1(sy)}`);
-      o.pants.setAttribute("d",`M${f1(hx-1)} ${f1(hy+1)}L${f1(hx+1)} ${f1(hy+1)}`);
-      o.stripe.setAttribute("d",`M${f1(lerp(hx,sx,.55))} ${f1(lerp(hy,sy,.55))}L${f1(lerp(hx,sx,.2)-.5)} ${f1(lerp(hy,sy,.2))}`);
-      setLeg(o.legN,hx,hy,f0);
-      o.hair.setAttribute("cx",f1(hdx-1.2)); o.hair.setAttribute("cy",f1(hdy-1.1)); o.head.setAttribute("cx",f1(hdx+.9)); o.head.setAttribute("cy",f1(hdy+.5));
-      o.band.setAttribute("d",`M${f1(hdx-4.6)} ${f1(hdy-.9)}Q${f1(hdx+1)} ${f1(hdy-5.4)} ${f1(hdx+5.9)} ${f1(hdy-1.6)}`);
-      o.eye.setAttribute("cx",f1(hdx+3.6)); o.eye.setAttribute("cy",f1(hdy+.2));
-      setArm(o.armN,sx,sy,armA[0],armA[1]);
+      const lr=lean*Math.PI/180, TL=22, sx=hx+Math.sin(lr)*TL, sy=hy-Math.cos(lr)*TL, nx=Math.cos(lr), ny=Math.sin(lr);
+      const hdx=sx+3.4, hdy=sy-8, tilt=lean*.5;
+      o.shadow.setAttribute("cx",fx(hx)); o.shadow.setAttribute("cy",fx(surf(hx)+.5)); o.shadow.setAttribute("opacity",ph==="leap"?Math.max(.25,1-Math.sin(Math.PI*q)):1);
+      setArm(o.armF,sx,sy,armB[0],armB[1]); setLeg(o.legF,hx,hy,f1_,.5);
+      const tor=(t0,t1)=>{ const fr=[],bk=[]; for(let i=0;i<=5;i++){ const tt=lerp(t0,t1,i/5), cx=hx+(sx-hx)*tt, cy=hy+(sy-hy)*tt, w=wdt(tt)/2; fr.push(fx(cx+nx*w)+" "+fx(cy+ny*w)); bk.push(fx(cx-nx*w)+" "+fx(cy-ny*w)) } return "M"+fr.join("L")+"L"+bk.reverse().join("L")+"Z" };
+      o.skin.setAttribute("d",tor(0,1)); o.waist.setAttribute("d",tor(0,.2));
+      o.top.setAttribute("d",c.g==="m"?tor(.12,1):tor(.58,.98));
+      if(c.g==="m") o.logo.setAttribute("d",seg(lerp(hx,sx,.58)+nx*1.5,lerp(hy,sy,.58)+ny*1.5,lerp(hx,sx,.7)+nx*1.5,lerp(hy,sy,.7)+ny*1.5,3.4,3.4));
+      setLeg(o.legN,hx,hy,f0,.5);
+      o.neck.setAttribute("d",seg(sx+.5,sy,hdx-.5,hdy+3,4.2,3.8));
+      const ear=[hdx-1.4,hdy+.8];
+      if(o.tail){ const A=[hdx-4.4,hdy-2.4], ph_=2*Math.PI*u, p1=[A[0]-5.4,A[1]+1.4+1.5*Math.sin(ph_)], p2=[p1[0]-5.6,p1[1]+2.4+2.6*Math.sin(ph_-.9)], p3=[p2[0]-3.4,p2[1]+3.4+3*Math.sin(ph_-1.7)];
+        o.tail[0].setAttribute("d",seg(A[0],A[1],p1[0],p1[1],3.8,3.4)); o.tail[1].setAttribute("d",seg(p1[0],p1[1],p2[0],p2[1],3.4,2.4)); o.tail[2].setAttribute("d",seg(p2[0],p2[1],p3[0],p3[1],2.4,.6));
+        o.tie.setAttribute("cx",fx(A[0]+.4)); o.tie.setAttribute("cy",fx(A[1]+.2)) }
+      o.hair.setAttribute("cx",fx(hdx-1.1)); o.hair.setAttribute("cy",fx(hdy-1.3)); o.hair.setAttribute("transform",`rotate(${fx(tilt)} ${fx(hdx)} ${fx(hdy)})`);
+      o.head.setAttribute("cx",fx(hdx+.6)); o.head.setAttribute("cy",fx(hdy+.5)); o.head.setAttribute("transform",`rotate(${fx(tilt)} ${fx(hdx)} ${fx(hdy)})`);
+      o.ear.setAttribute("cx",fx(ear[0])); o.ear.setAttribute("cy",fx(ear[1]));
+      o.nose.setAttribute("d",`M${fx(hdx+5)} ${fx(hdy-.6)}L${fx(hdx+7.1)} ${fx(hdy+1.6)}L${fx(hdx+5)} ${fx(hdy+1.9)}Z`);
+      o.front.setAttribute("d",c.g==="m"?`M${fx(hdx-4)} ${fx(hdy-4.2)}Q${fx(hdx+2)} ${fx(hdy-8)} ${fx(hdx+6.2)} ${fx(hdy-3.2)}L${fx(hdx+4)} ${fx(hdy-3.6)}Q${fx(hdx)} ${fx(hdy-5.4)} ${fx(hdx-3)} ${fx(hdy-2)}Z`:`M${fx(hdx-4.6)} ${fx(hdy-3)}Q${fx(hdx+1)} ${fx(hdy-8)} ${fx(hdx+5.6)} ${fx(hdy-2.6)}L${fx(hdx+4)} ${fx(hdy-3.4)}Q${fx(hdx)} ${fx(hdy-5)} ${fx(hdx-3.2)} ${fx(hdy-1.8)}Z`);
+      o.brow.setAttribute("d",`M${fx(hdx+2.4)} ${fx(hdy-2.1)}L${fx(hdx+5)} ${fx(hdy-2.5)}`);
+      o.eye.setAttribute("cx",fx(hdx+3.7)); o.eye.setAttribute("cy",fx(hdy-.7));
+      o.mouth.setAttribute("d",`M${fx(hdx+3.6)} ${fx(hdy+3.2)}L${fx(hdx+5.2)} ${fx(hdy+3.1)}`);
+      const pn=setArm(o.armN,sx,sy,armA[0],armA[1]);
+      if(o.band){ const ux=sx+(pn.ex-sx)*.28, uy=sy+(pn.ey-sy)*.28, vx=sx+(pn.ex-sx)*.72, vy=sy+(pn.ey-sy)*.72;     // armband with the phone
+        o.band[0].setAttribute("d",seg(ux,uy,vx,vy,6.9,6.5)); o.band[1].setAttribute("d",seg(lerp(ux,vx,.2),lerp(uy,vy,.2),lerp(ux,vx,.8),lerp(uy,vy,.8),3.2,3.2)) }
     });
     puffs.forEach(p=>{ const a=(now-p.t)/.5; if(a<0||a>1){ p.e.setAttribute("opacity",0); return } p.e.setAttribute("cx",f1(p.x-a*5)); p.e.setAttribute("cy",f1(p.y-1-a*3)); p.e.setAttribute("rx",f1(2+a*5)); p.e.setAttribute("ry",f1(1.2+a*2.6)); p.e.setAttribute("opacity",(.55*(1-a)).toFixed(2)) });
     conf.forEach(c=>{ const a=now-c.t; if(a<0||a>1){ c.e.setAttribute("opacity",0); return } const x=c.x+c.vx*a, y=c.y+c.vy*a+130*a*a;
@@ -947,8 +969,11 @@ async function api(body,ms){
   try{
     const r=await fetch(CONFIG.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body),signal:ctl.signal});
     const t=await r.text();
-    try{ return JSON.parse(t) }
+    let j; try{ j=JSON.parse(t) }
     catch(_){ throw new Error(T("Server sent an unexpected reply - check the Apps Script deployment (New version, access: Anyone).")) }
+    if(j&&j.ok===false&&j.error==="Unknown action")                      // the deployed Code.gs is older than this app
+      j.error=B("The Apps Script backend is out of date. Paste the latest Code.gs, then Deploy → Manage deployments → Edit → New version → Deploy.","Apps Script ব্যাকএন্ড পুরনো। সর্বশেষ Code.gs পেস্ট করে Deploy → Manage deployments → Edit → New version → Deploy করুন।");
+    return j;
   }finally{ clearTimeout(to) }
 }
 const getToken=()=>sessionStorage.getItem("tk")||localStorage.getItem("tk")||"";
